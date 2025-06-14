@@ -4,21 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Send, Loader2, Brain } from "lucide-react";
+import { Bot, Send, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { pipeline, Pipeline } from "@huggingface/transformers";
-
-// Enhanced interfaces for structured responses
-interface RelevantExperience {
-  id: string;
-  company: string;
-  role: string;
-  similarity?: number;
-  snippet?: string;
-}
+import { chatService, type RelevantExperience } from "@/services/chatService";
 
 interface Source {
   id: string;
@@ -62,70 +52,17 @@ function FormattedTimestamp({ timestamp }: { timestamp: number }) {
 
 const ChatPage = () => {
   const { toast } = useToast();
-  const [aiPipeline, setAiPipeline] = useState<any>(null);
-  const [isInitializing, setIsInitializing] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome-1",
       sender: "ai",
-      text: "Hi! I'm your AI interview prep assistant running locally in your browser. I'll help you prepare with insights from real candidate experiences. Please wait while I initialize...",
+      text: "Hi! I'm your AI interview prep assistant. I can help you prepare for interviews based on real candidate experiences. Ask me about specific companies, roles, or interview types!",
       timestamp: Date.now()
     }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-
-  // Initialize AI pipeline
-  useEffect(() => {
-    const initializeAI = async () => {
-      try {
-        setIsInitializing(true);
-        console.log('Initializing AI pipeline...');
-        
-        // Use a small, efficient model for text generation
-        const textGenerator = await pipeline(
-          'text-generation',
-          'onnx-community/Qwen2.5-0.5B-Instruct',
-          { 
-            device: 'wasm'
-          }
-        );
-        
-        setAiPipeline(textGenerator);
-        
-        // Update welcome message
-        setMessages(prev => prev.map(msg => 
-          msg.id === "welcome-1" 
-            ? { ...msg, text: "Hi! I'm your AI interview prep assistant running locally in your browser. I can help you prepare for interviews based on real candidate experiences. Ask me about specific companies, roles, or interview types!" }
-            : msg
-        ));
-        
-        toast({
-          title: "AI Ready!",
-          description: "Local AI assistant is now ready to help with your interview prep.",
-        });
-        
-      } catch (error) {
-        console.error('Failed to initialize AI:', error);
-        setMessages(prev => prev.map(msg => 
-          msg.id === "welcome-1" 
-            ? { ...msg, text: "Sorry, I couldn't initialize properly. You can still search through interview experiences, but AI responses may be limited." }
-            : msg
-        ));
-        
-        toast({
-          title: "AI Initialization Failed",
-          description: "Using fallback mode. Some features may be limited.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsInitializing(false);
-      }
-    };
-
-    initializeAI();
-  }, []);
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -158,7 +95,7 @@ const ChatPage = () => {
     const aiThinkingMessage: ChatMessage = {
       id: `ai-thinking-${Date.now()}`,
       sender: "ai",
-      text: "Analyzing your query and searching through relevant interview experiences...",
+      text: "Thinking and checking past experiences...",
       isLoading: true,
       timestamp: Date.now(),
     };
@@ -167,156 +104,23 @@ const ChatPage = () => {
     scrollToBottom();
 
     try {
-      // Search for relevant experiences in the database
-      const searchTerms = userMessage.text.toLowerCase();
+      const response = await chatService.getChatResponse({ query: userMessage.text });
       
-      // Improved search logic for more precise matching
-      let searchQuery = '';
-      let searchType = 'general';
-      
-      if (searchTerms.includes('google') && (searchTerms.includes('interview') || searchTerms.includes('engineer') || searchTerms.includes('sde'))) {
-        searchQuery = 'company.ilike.%google%';
-        searchType = 'company';
-      } else if (searchTerms.includes('microsoft') && (searchTerms.includes('interview') || searchTerms.includes('engineer'))) {
-        searchQuery = 'company.ilike.%microsoft%';
-        searchType = 'company';
-      } else if (searchTerms.includes('amazon') && (searchTerms.includes('interview') || searchTerms.includes('engineer'))) {
-        searchQuery = 'company.ilike.%amazon%';
-        searchType = 'company';
-      } else if (searchTerms.includes('meta') || searchTerms.includes('facebook')) {
-        searchQuery = 'company.ilike.%meta%,company.ilike.%facebook%';
-        searchType = 'company';
-      } else if (searchTerms.includes('system design') && searchTerms.includes('interview')) {
-        searchQuery = 'full_text.ilike.%system design%,full_text.ilike.%scalability%,full_text.ilike.%architecture%';
-        searchType = 'system_design';
-      } else if (searchTerms.includes('behavioral') && searchTerms.includes('interview')) {
-        searchQuery = 'full_text.ilike.%behavioral%,full_text.ilike.%leadership%,full_text.ilike.%conflict%';
-        searchType = 'behavioral';
-      } else if (searchTerms.includes('coding') && searchTerms.includes('interview')) {
-        searchQuery = 'full_text.ilike.%coding%,full_text.ilike.%algorithm%,full_text.ilike.%leetcode%';
-        searchType = 'coding';
-      } else {
-        // For general questions, don't search the database
-        searchQuery = '';
-        searchType = 'advice_only';
-      }
-      
-      let experiences = [];
-      let error = null;
-      
-      if (searchQuery) {
-        const result = await supabase
-          .from('interview_posts')
-          .select('*')
-          .or(searchQuery)
-          .limit(3);
-        experiences = result.data || [];
-        error = result.error;
-      }
-
-      console.log('Database search results:', { experiences, error, query: userMessage.text, searchType });
-
-      let relevantExperiences: RelevantExperience[] = [];
-      let contextText = "";
-
-      if (experiences && experiences.length > 0) {
-        relevantExperiences = experiences.map(exp => ({
-          id: exp.id,
-          company: exp.company,
-          role: exp.role,
-          snippet: exp.full_text ? exp.full_text.substring(0, 150) + "..." : ""
-        }));
-
-        contextText = experiences.map(exp => 
-          `Company: ${exp.company}\nRole: ${exp.role}\nExperience: ${exp.full_text?.substring(0, 500)}`
-        ).join('\n\n---\n\n');
-      }
-
-      // Generate AI response - more specific and contextual
-      let aiResponse = "";
-
-      if (relevantExperiences.length > 0 && searchType === 'company') {
-        const companyName = relevantExperiences[0].company;
-        aiResponse = `Based on ${relevantExperiences.length} real ${companyName} interview experience(s):\n\n`;
-        
-        relevantExperiences.forEach((exp, index) => {
-          aiResponse += `${exp.company} - ${exp.role}:\n${exp.snippet}\n\n`;
-        });
-        
-        aiResponse += `${companyName}-specific tips:\n• Research ${companyName}'s recent projects and engineering culture\n• Practice problems similar to ${companyName}'s interview style\n• Prepare for their specific behavioral question patterns\n• Review the role requirements carefully`;
-      } else if (searchType === 'system_design') {
-        if (relevantExperiences.length > 0) {
-          aiResponse = `Based on real system design interview experiences:\n\n`;
-          relevantExperiences.forEach((exp, index) => {
-            aiResponse += `${exp.company} - ${exp.role}:\n${exp.snippet}\n\n`;
-          });
-        } else {
-          aiResponse = `System Design Interview Tips:\n\n• Start by clarifying requirements and constraints\n• Design high-level architecture first\n• Discuss data storage and database choices\n• Consider scalability, load balancing, and caching\n• Talk about monitoring and failure handling\n• Draw diagrams to visualize your design\n• Discuss trade-offs between different approaches`;
-        }
-      } else if (searchType === 'behavioral') {
-        if (relevantExperiences.length > 0) {
-          aiResponse = `Based on real behavioral interview experiences:\n\n`;
-          relevantExperiences.forEach((exp, index) => {
-            aiResponse += `${exp.company} - ${exp.role}:\n${exp.snippet}\n\n`;
-          });
-        } else {
-          aiResponse = `Behavioral Interview Tips:\n\n• Use the STAR method (Situation, Task, Action, Result)\n• Prepare 3-5 detailed examples from past experiences\n• Focus on leadership, problem-solving, and teamwork\n• Be specific with metrics and outcomes\n• Practice common questions like "Tell me about a time when..."\n• Show growth mindset and learning from failures`;
-        }
-      } else if (searchType === 'coding') {
-        if (relevantExperiences.length > 0) {
-          aiResponse = `Based on real coding interview experiences:\n\n`;
-          relevantExperiences.forEach((exp, index) => {
-            aiResponse += `${exp.company} - ${exp.role}:\n${exp.snippet}\n\n`;
-          });
-        } else {
-          aiResponse = `Coding Interview Tips:\n\n• Practice on LeetCode, HackerRank, or similar platforms\n• Master data structures (arrays, trees, graphs, hash tables)\n• Learn algorithms (sorting, searching, dynamic programming)\n• Think out loud during the interview\n• Start with brute force, then optimize\n• Test your code with examples\n• Ask clarifying questions about requirements`;
-        }
-      } else {
-        aiResponse = `I'd be happy to help with your interview preparation!\n\nFor specific advice, try asking about:\n• Specific companies: "Google software engineer interview"\n• Interview types: "system design interview tips"\n• Behavioral interviews: "behavioral interview questions"\n• Coding prep: "coding interview preparation"\n\nWhat specific aspect of interview prep would you like help with?`;
-      }
-
-      if (aiPipeline && !isInitializing) {
-        try {
-          const prompt = `You are an interview preparation assistant. A user asked: "${userMessage.text}"
-
-${contextText ? `Based on these real interview experiences:\n${contextText}\n\n` : ''}
-
-Provide helpful, specific advice for interview preparation. Keep your response concise and actionable. Focus on practical tips.
-
-Response:`;
-
-          const result = await aiPipeline(prompt, {
-            max_new_tokens: 200,
-            temperature: 0.7,
-            do_sample: true,
-            return_full_text: false,
-            pad_token_id: 50256
-          });
-
-          if (result && result[0] && result[0].generated_text) {
-            aiResponse = result[0].generated_text.trim();
-          }
-        } catch (aiError) {
-          console.error('AI generation error:', aiError);
-          // Keep the database-based response we already generated above
-        }
-      }
-
       const aiResponseMessage: ChatMessage = {
         id: `ai-${Date.now()}`,
         sender: "ai",
-        text: aiResponse,
+        text: response.advice,
         timestamp: Date.now(),
-        relevantExperiences: relevantExperiences
+        relevantExperiences: response.relevantExperienceSnippets
       };
 
       setMessages(prev => prev.filter(msg => msg.id !== aiThinkingMessage.id).concat(aiResponseMessage));
 
       // Show success message if experiences were found
-      if (relevantExperiences.length > 0) {
+      if (response.relevantExperienceSnippets && response.relevantExperienceSnippets.length > 0) {
         toast({
           title: "Found relevant experiences!",
-          description: `Based on ${relevantExperiences.length} similar interview experiences.`,
+          description: `Based on ${response.relevantExperienceSnippets.length} similar interview experiences.`,
         });
       }
 
@@ -326,7 +130,7 @@ Response:`;
       const errorMessage: ChatMessage = {
         id: `ai-error-${Date.now()}`,
         sender: "ai",
-        text: "Sorry, I encountered an error while processing your request. Please try again or ask a different question.",
+        text: error instanceof Error ? error.message : "Sorry, I encountered an error while processing your request. Please try again.",
         timestamp: Date.now(),
       };
 
@@ -406,18 +210,13 @@ Response:`;
                                 </p>
                                 <div className="flex flex-wrap gap-1">
                                   {message.relevantExperiences.map((exp, index) => (
-                                    <Badge 
-                                      key={exp.id} 
-                                      variant="secondary" 
-                                      className="text-xs px-2 py-1"
-                                    >
-                                      {exp.company} - {exp.role}
-                                      {exp.similarity && (
-                                        <span className="ml-1 text-[10px] opacity-70">
-                                          {Math.round(exp.similarity * 100)}%
-                                        </span>
-                                      )}
-                                    </Badge>
+                                     <Badge 
+                                       key={exp.id} 
+                                       variant="secondary" 
+                                       className="text-xs px-2 py-1"
+                                     >
+                                       {exp.company} - {exp.role}
+                                     </Badge>
                                   ))}
                                 </div>
                               </div>
