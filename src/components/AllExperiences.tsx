@@ -19,17 +19,27 @@ interface Experience {
   created_at: string;
 }
 
-const AllExperiences = () => {
+interface AllExperiencesProps {
+  limit?: number;
+}
+
+const AllExperiences = ({ limit }: AllExperiencesProps) => {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchAllExperiences = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('interview_posts')
         .select('*')
         .order('created_at', { ascending: false });
+      
+      if (limit) {
+        query = query.limit(limit);
+      }
 
+      const { data, error } = await query;
+      
       if (error) throw error;
       setExperiences(data || []);
     } catch (error) {
@@ -41,7 +51,7 @@ const AllExperiences = () => {
 
   useEffect(() => {
     fetchAllExperiences();
-  }, []);
+  }, [limit]);
 
   if (isLoading) {
     return (

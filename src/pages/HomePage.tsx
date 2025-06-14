@@ -397,10 +397,10 @@ const HomePage = () => {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="top-experiences">
-                <TopExperiences />
+                <TopExperiences limit={5} />
               </TabsContent>
               <TabsContent value="all-experiences">
-                <AllExperiences />
+                <AllExperiences limit={5} />
               </TabsContent>
               <TabsContent value="search">
                 <SearchExperiences />

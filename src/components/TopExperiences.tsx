@@ -19,7 +19,11 @@ interface TopExperience {
   created_at: string;
 }
 
-const TopExperiences = () => {
+interface TopExperiencesProps {
+  limit?: number;
+}
+
+const TopExperiences = ({ limit = 5 }: TopExperiencesProps) => {
   const [topExperiences, setTopExperiences] = useState<TopExperience[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -31,7 +35,7 @@ const TopExperiences = () => {
         .gt('rating_count', 0)
         .order('average_rating', { ascending: false })
         .order('rating_count', { ascending: false })
-        .limit(5);
+        .limit(limit);
 
       if (error) throw error;
       setTopExperiences(data || []);
@@ -44,7 +48,7 @@ const TopExperiences = () => {
 
   useEffect(() => {
     fetchTopExperiences();
-  }, []);
+  }, [limit]);
 
   if (isLoading) {
     return (
