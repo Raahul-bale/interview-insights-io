@@ -2,8 +2,11 @@ import Header from "@/components/Header";
 import ExperienceCard from "@/components/ExperienceCard";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const HomePage = () => {
+  const { user } = useAuth();
+  
   // Dummy data for interview experiences
   const experiences = [
     {
@@ -100,23 +103,49 @@ const HomePage = () => {
       <section className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Share & Learn from Interview Experiences
+            {user ? `Welcome back, ${user.email?.split('@')[0]}!` : 'Share & Learn from Interview Experiences'}
           </h1>
           <p className="text-xl mb-8 text-primary-foreground/90 max-w-2xl mx-auto">
-            Connect with fellow freshers, share your interview journeys, and get AI-powered preparation help
+            {user ? 
+              'Access your personalized interview prep dashboard with AI-powered assistance and real candidate experiences.' :
+              'Connect with fellow freshers, share your interview journeys, and get AI-powered preparation help'
+            }
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/submit">
-              <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                Share Your Experience
-              </Button>
-            </Link>
-            <Link to="/chat">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
-                Get AI Interview Help
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                <Link to="/submit">
+                  <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                    Share Your Experience
+                  </Button>
+                </Link>
+                <Link to="/chat">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+                    Get AI Interview Help
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                    Join the Community
+                  </Button>
+                </Link>
+                <Link to="/auth">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+                    Start Your Prep Journey
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
+          
+          {!user && (
+            <div className="mt-6 text-sm text-primary-foreground/80">
+              Sign up to access AI-powered interview prep and share experiences
+            </div>
+          )}
         </div>
       </section>
 
@@ -127,11 +156,13 @@ const HomePage = () => {
             <h2 className="text-3xl font-bold text-foreground">
               Recent Interview Experiences
             </h2>
-            <Link to="/submit">
-              <Button variant="outline">
-                Add Your Story
-              </Button>
-            </Link>
+            {user && (
+              <Link to="/submit">
+                <Button variant="outline">
+                  Add Your Story
+                </Button>
+              </Link>
+            )}
           </div>
           
           <div className="grid gap-6 md:gap-8">
@@ -148,17 +179,35 @@ const HomePage = () => {
       {/* CTA Section */}
       <section className="bg-muted py-16">
         <div className="container mx-auto px-4 text-center">
-          <h3 className="text-2xl font-bold text-foreground mb-4">
-            Ready to Share Your Interview Experience?
-          </h3>
-          <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
-            Help fellow students by sharing your interview journey. Every experience shared helps someone prepare better!
-          </p>
-          <Link to="/submit">
-            <Button size="lg">
-              Share Your Experience
-            </Button>
-          </Link>
+          {user ? (
+            <>
+              <h3 className="text-2xl font-bold text-foreground mb-4">
+                Ready to Share Your Interview Experience?
+              </h3>
+              <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
+                Help fellow students by sharing your interview journey. Every experience shared helps someone prepare better!
+              </p>
+              <Link to="/submit">
+                <Button size="lg">
+                  Share Your Experience
+                </Button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <h3 className="text-2xl font-bold text-foreground mb-4">
+                Join Our Interview Prep Community
+              </h3>
+              <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
+                Sign up to access thousands of real interview experiences, AI-powered prep assistance, and connect with fellow candidates.
+              </p>
+              <Link to="/auth">
+                <Button size="lg">
+                  Get Started - It's Free
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </section>
     </div>
