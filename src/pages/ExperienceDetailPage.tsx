@@ -53,6 +53,12 @@ const ExperienceDetailPage = () => {
         .single();
       
       if (error) throw error;
+      console.log('Fetched experience data:', { 
+        id: data.id, 
+        average_rating: data.average_rating, 
+        rating_count: data.rating_count,
+        upvote_count: data.upvote_count 
+      });
       setExperience(data);
       
       // Fetch related experiences after getting the main experience
@@ -131,6 +137,7 @@ const ExperienceDetailPage = () => {
 
   const refreshExperience = () => {
     console.log('refreshExperience called - fetching updated data');
+    console.log('Current rating count before refresh:', experience?.rating_count);
     fetchExperience();
   };
 
