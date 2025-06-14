@@ -20,6 +20,7 @@ export type Database = {
           role: string
           rounds: Json
           updated_at: string
+          user_id: string | null
           user_name: string
         }
         Insert: {
@@ -32,6 +33,7 @@ export type Database = {
           role: string
           rounds?: Json
           updated_at?: string
+          user_id?: string | null
           user_name: string
         }
         Update: {
@@ -44,7 +46,35 @@ export type Database = {
           role?: string
           rounds?: Json
           updated_at?: string
+          user_id?: string | null
           user_name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
