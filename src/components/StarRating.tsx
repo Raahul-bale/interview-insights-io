@@ -68,6 +68,8 @@ const StarRating = ({
           user_id: user.id,
           experience_id: experienceId,
           rating: rating
+        }, {
+          onConflict: 'user_id, experience_id'
         });
 
       if (error) throw error;
