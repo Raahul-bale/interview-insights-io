@@ -111,6 +111,8 @@ const ChatPage = () => {
     e?.preventDefault();
     if (!input.trim() || isLoading) return;
 
+    console.log('Chat: Starting submission, isLoading:', isLoading);
+
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
       sender: "user",
@@ -121,6 +123,8 @@ const ChatPage = () => {
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+
+    console.log('Chat: Set loading to true');
 
     const aiThinkingMessage: ChatMessage = {
       id: `ai-thinking-${Date.now()}`,
@@ -133,8 +137,18 @@ const ChatPage = () => {
     setMessages(prev => [...prev, aiThinkingMessage]);
     scrollToBottom();
 
+    // Add timeout as fallback
+    const timeoutId = setTimeout(() => {
+      console.log('Chat: Timeout reached, forcing loading to false');
+      setIsLoading(false);
+    }, 30000); // 30 second timeout
+
     try {
+      console.log('Chat: Calling chatService');
       const response = await chatService.getChatResponse({ query: userMessage.text });
+      console.log('Chat: Got response from chatService', response);
+      
+      clearTimeout(timeoutId);
       
       const aiResponseMessage: ChatMessage = {
         id: `ai-${Date.now()}`,
@@ -155,7 +169,8 @@ const ChatPage = () => {
       }
 
     } catch (error) {
-      console.error('Error in AI chat:', error);
+      console.error('Chat: Error in handleSubmit:', error);
+      clearTimeout(timeoutId);
       
       const errorMessage: ChatMessage = {
         id: `ai-error-${Date.now()}`,
@@ -172,6 +187,8 @@ const ChatPage = () => {
         variant: "destructive",
       });
     } finally {
+      console.log('Chat: Setting loading to false');
+      clearTimeout(timeoutId);
       setIsLoading(false);
       scrollToBottom();
     }
@@ -285,7 +302,7 @@ const ChatPage = () => {
                   </Button>
                 </form>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Press Enter to send, Shift+Enter for new line
+                  Press Enter to send, Shift+Enter for new line | Loading: {isLoading ? 'Yes' : 'No'}
                 </p>
               </div>
             </CardContent>
