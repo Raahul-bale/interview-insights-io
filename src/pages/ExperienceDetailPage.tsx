@@ -118,6 +118,7 @@ const ExperienceDetailPage = () => {
           filter: `id=eq.${id}`
         },
         (payload) => {
+          console.log('Real-time update received:', payload);
           setExperience(prev => prev ? { ...prev, ...payload.new } : null);
         }
       )
