@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { FileText, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import StarRating from "./StarRating";
+import UpvoteButton from "./UpvoteButton";
 
 interface Experience {
   id: string;
@@ -14,6 +15,7 @@ interface Experience {
   rounds: any;
   average_rating: number;
   rating_count: number;
+  upvote_count: number;
   created_at: string;
 }
 
@@ -129,8 +131,15 @@ const AllExperiences = () => {
                     </Badge>
                   ))}
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  Shared {new Date(experience.created_at).toLocaleDateString()}
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-muted-foreground">
+                    Shared {new Date(experience.created_at).toLocaleDateString()}
+                  </div>
+                  <UpvoteButton
+                    experienceId={experience.id}
+                    upvoteCount={experience.upvote_count}
+                    onUpvoteUpdate={fetchAllExperiences}
+                  />
                 </div>
               </div>
             </CardContent>

@@ -44,6 +44,27 @@ export type Database = {
           },
         ]
       }
+      experience_upvotes: {
+        Row: {
+          created_at: string
+          experience_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          experience_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          experience_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       interview_posts: {
         Row: {
           average_rating: number | null
@@ -57,6 +78,7 @@ export type Database = {
           role: string
           rounds: Json
           updated_at: string
+          upvote_count: number
           user_id: string | null
           user_name: string
         }
@@ -72,6 +94,7 @@ export type Database = {
           role: string
           rounds?: Json
           updated_at?: string
+          upvote_count?: number
           user_id?: string | null
           user_name: string
         }
@@ -87,6 +110,7 @@ export type Database = {
           role?: string
           rounds?: Json
           updated_at?: string
+          upvote_count?: number
           user_id?: string | null
           user_name?: string
         }

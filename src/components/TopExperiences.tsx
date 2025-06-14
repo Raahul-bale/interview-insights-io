@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import StarRating from "./StarRating";
+import UpvoteButton from "./UpvoteButton";
 
 interface TopExperience {
   id: string;
@@ -14,6 +15,7 @@ interface TopExperience {
   rounds: any;
   average_rating: number;
   rating_count: number;
+  upvote_count: number;
   created_at: string;
 }
 
@@ -23,9 +25,13 @@ const TopExperiences = () => {
 
   const fetchTopExperiences = async () => {
     try {
-      const { data, error } = await supabase.rpc('get_top_experiences', {
-        limit_count: 5
-      });
+      const { data, error } = await supabase
+        .from('interview_posts')
+        .select('*')
+        .gt('rating_count', 0)
+        .order('average_rating', { ascending: false })
+        .order('rating_count', { ascending: false })
+        .limit(5);
 
       if (error) throw error;
       setTopExperiences(data || []);
@@ -115,12 +121,21 @@ const TopExperiences = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {Array.isArray(experience.rounds) && experience.rounds.map((round: any, roundIndex: number) => (
-                  <Badge key={roundIndex} variant="secondary">
-                    {round.type.replace('-', ' ').toUpperCase()}
-                  </Badge>
-                ))}
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  {Array.isArray(experience.rounds) && experience.rounds.map((round: any, roundIndex: number) => (
+                    <Badge key={roundIndex} variant="secondary">
+                      {round.type.replace('-', ' ').toUpperCase()}
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex justify-end">
+                  <UpvoteButton
+                    experienceId={experience.id}
+                    upvoteCount={experience.upvote_count}
+                    onUpvoteUpdate={fetchTopExperiences}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

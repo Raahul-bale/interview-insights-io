@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import StarRating from "./StarRating";
+import UpvoteButton from "./UpvoteButton";
 
 interface SearchResult {
   id: string;
@@ -17,6 +18,7 @@ interface SearchResult {
   full_text: string;
   average_rating: number;
   rating_count: number;
+  upvote_count: number;
   created_at: string;
 }
 
@@ -30,10 +32,14 @@ const SearchExperiences = () => {
 
     setIsSearching(true);
     try {
-      const { data, error } = await supabase.rpc('search_experiences', {
-        search_query: searchQuery.trim(),
-        limit_count: 10
-      });
+      const { data, error } = await supabase
+        .from('interview_posts')
+        .select('*')
+        .or(`company.ilike.%${searchQuery.trim()}%,role.ilike.%${searchQuery.trim()}%,full_text.ilike.%${searchQuery.trim()}%`)
+        .order('average_rating', { ascending: false })
+        .order('rating_count', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(10);
 
       if (error) throw error;
       setResults(data || []);
@@ -88,6 +94,7 @@ const SearchExperiences = () => {
                     experienceId={experience.id}
                     averageRating={experience.average_rating}
                     ratingCount={experience.rating_count}
+                    onRatingUpdate={handleSearch}
                   />
                 </div>
               </CardHeader>
@@ -103,6 +110,13 @@ const SearchExperiences = () => {
                   <p className="text-sm text-muted-foreground line-clamp-2">
                     {experience.full_text}
                   </p>
+                  <div className="flex justify-end">
+                    <UpvoteButton
+                      experienceId={experience.id}
+                      upvoteCount={experience.upvote_count}
+                      onUpvoteUpdate={handleSearch}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
