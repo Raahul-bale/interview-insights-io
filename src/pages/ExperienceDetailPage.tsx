@@ -103,6 +103,29 @@ const ExperienceDetailPage = () => {
 
   useEffect(() => {
     fetchExperience();
+    
+    // Set up real-time subscription for experience updates
+    if (!id) return;
+    
+    const channel = supabase
+      .channel('experience-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'interview_posts',
+          filter: `id=eq.${id}`
+        },
+        (payload) => {
+          setExperience(prev => prev ? { ...prev, ...payload.new } : null);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [id]);
 
   const refreshExperience = () => {
