@@ -9,6 +9,7 @@ import SubmitExperience from "./pages/SubmitExperience";
 import ChatPage from "./pages/ChatPage";
 import AuthPage from "./pages/AuthPage";
 import ExperienceDetailPage from "./pages/ExperienceDetailPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -53,6 +54,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ExperienceDetailPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
                 </ProtectedRoute>
               } 
             />
