@@ -109,6 +109,9 @@ const ProfilePage = () => {
           linkedin_url: profile.linkedin_url,
           avatar_url: profile.avatar_url,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id',
+          ignoreDuplicates: false
         });
 
       if (error) throw error;
