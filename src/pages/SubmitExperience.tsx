@@ -14,6 +14,7 @@ interface Round {
   type: string;
   questions: string;
   answers: string;
+  experience: string;
   difficulty: string;
 }
 
@@ -31,11 +32,11 @@ const SubmitExperience = () => {
   });
   
   const [rounds, setRounds] = useState<Round[]>([
-    { type: "", questions: "", answers: "", difficulty: "" }
+    { type: "", questions: "", answers: "", experience: "", difficulty: "" }
   ]);
 
   const addRound = () => {
-    setRounds([...rounds, { type: "", questions: "", answers: "", difficulty: "" }]);
+    setRounds([...rounds, { type: "", questions: "", answers: "", experience: "", difficulty: "" }]);
   };
 
   const removeRound = (index: number) => {
@@ -101,7 +102,7 @@ const SubmitExperience = () => {
 
     try {
       // Create full text for search/embedding
-      const fullText = `${formData.company} ${formData.role} interview experience by ${formData.name}. ${rounds.map(r => `${r.type} round: Questions: ${r.questions} Answers: ${r.answers}`).join(' ')}`;
+      const fullText = `${formData.company} ${formData.role} interview experience by ${formData.name}. ${rounds.map(r => `${r.type} round: Questions: ${r.questions} Answers: ${r.answers} Experience: ${r.experience}`).join(' ')}`;
       
       // Prepare rounds data - filter out rounds with no type
       const roundsData = rounds.filter(r => r.type).map(r => ({
@@ -132,7 +133,7 @@ const SubmitExperience = () => {
 
       // Reset form
       setFormData({ name: "", company: "", role: "", date: "", outcome: "" });
-      setRounds([{ type: "", questions: "", answers: "", difficulty: "" }]);
+      setRounds([{ type: "", questions: "", answers: "", experience: "", difficulty: "" }]);
       
     } catch (error) {
       console.error('Error submitting experience:', error);
@@ -307,6 +308,15 @@ const SubmitExperience = () => {
                               value={round.answers}
                               onChange={(e) => updateRound(index, 'answers', e.target.value)}
                               placeholder="How did you answer? What was your approach? Any tips..."
+                              rows={3}
+                            />
+                          </div>
+                          <div>
+                            <Label>Overall Experience & Additional Tips (Optional)</Label>
+                            <Textarea
+                              value={round.experience}
+                              onChange={(e) => updateRound(index, 'experience', e.target.value)}
+                              placeholder="Share your overall experience for this round, any additional tips, preparation advice, or insights that might help others..."
                               rows={3}
                             />
                           </div>
