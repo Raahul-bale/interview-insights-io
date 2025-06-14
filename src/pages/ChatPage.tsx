@@ -216,94 +216,98 @@ const ChatPage = () => {
             </p>
           </div>
 
-          <Card className="h-[600px] flex flex-col overflow-hidden">
-            <CardHeader className="border-b">
+          <Card className="h-[600px] flex flex-col">
+            <CardHeader className="border-b flex-shrink-0">
               <CardTitle className="text-lg">Chat with AI Assistant</CardTitle>
             </CardHeader>
             
-            <CardContent className="flex-1 flex flex-col p-0">
-              {/* Messages Area */}
-              <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
-                <div className="space-y-4">
-                  {messages.map((message: ChatMessage) => (
-                    <div
-                      key={message.id}
-                      className={cn(
-                        "flex w-full",
-                        message.sender === "user" ? "justify-end" : "justify-start"
-                      )}
-                    >
-                       <div className={cn(
-                          "max-w-[80%] rounded-lg px-4 py-3 text-sm break-words overflow-hidden",
-                          message.sender === "user" 
-                            ? "bg-primary text-primary-foreground ml-auto" 
-                            : "bg-muted text-foreground mr-auto"
-                        )}>
-                        {message.isLoading ? (
-                          <div className="flex items-center space-x-2">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>{message.text}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{message.text}</div>
-                            
-                            {/* Show relevant experiences for AI messages */}
-                            {message.sender === "ai" && message.relevantExperiences && message.relevantExperiences.length > 0 && (
-                              <div className="mt-3 pt-2 border-t border-muted-foreground/20">
-                                <p className="text-xs text-muted-foreground mb-2 flex items-center">
-                                  <Bot className="h-3 w-3 mr-1" />
-                                  Based on {message.relevantExperiences.length} relevant experiences:
-                                </p>
-                                <div className="flex flex-wrap gap-1">
-                                  {message.relevantExperiences.map((exp, index) => (
-                                     <Badge 
-                                       key={exp.id} 
-                                       variant="secondary" 
-                                       className="text-xs px-2 py-1"
-                                     >
-                                       {exp.company} - {exp.role}
-                                     </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            
-                            <FormattedTimestamp timestamp={message.timestamp} />
-                          </>
+            <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+              {/* Messages Area - Scrollable */}
+              <div className="flex-1 overflow-hidden">
+                <ScrollArea ref={scrollAreaRef} className="h-full">
+                  <div className="p-4 space-y-4">
+                    {messages.map((message: ChatMessage) => (
+                      <div
+                        key={message.id}
+                        className={cn(
+                          "flex w-full",
+                          message.sender === "user" ? "justify-end" : "justify-start"
                         )}
+                      >
+                         <div className={cn(
+                            "max-w-[80%] rounded-lg px-4 py-3 text-sm break-words overflow-hidden",
+                            message.sender === "user" 
+                              ? "bg-primary text-primary-foreground ml-auto" 
+                              : "bg-muted text-foreground mr-auto"
+                          )}>
+                          {message.isLoading ? (
+                            <div className="flex items-center space-x-2">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <span>{message.text}</span>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{message.text}</div>
+                              
+                              {/* Show relevant experiences for AI messages */}
+                              {message.sender === "ai" && message.relevantExperiences && message.relevantExperiences.length > 0 && (
+                                <div className="mt-3 pt-2 border-t border-muted-foreground/20">
+                                  <p className="text-xs text-muted-foreground mb-2 flex items-center">
+                                    <Bot className="h-3 w-3 mr-1" />
+                                    Based on {message.relevantExperiences.length} relevant experiences:
+                                  </p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {message.relevantExperiences.map((exp, index) => (
+                                       <Badge 
+                                         key={exp.id} 
+                                         variant="secondary" 
+                                         className="text-xs px-2 py-1"
+                                       >
+                                         {exp.company} - {exp.role}
+                                       </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <FormattedTimestamp timestamp={message.timestamp} />
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
 
-              {/* Input Area */}
-              <div className="border-t p-4">
-                <form onSubmit={handleSubmit} className="flex space-x-2">
-                  <Input
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Ask about your interview prep... (e.g., 'I have a Google SDE interview')"
-                    disabled={isLoading}
-                    className="flex-1"
-                  />
-                  <Button 
-                    type="submit"
-                    disabled={isLoading || !input.trim()}
-                    size="sm"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
-                  </Button>
-                </form>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Press Enter to send, Shift+Enter for new line | Loading: {isLoading ? 'Yes' : 'No'}
-                </p>
+              {/* Input Area - Fixed at bottom */}
+              <div className="border-t bg-background flex-shrink-0">
+                <div className="p-4">
+                  <form onSubmit={handleSubmit} className="flex space-x-2">
+                    <Input
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Ask about your interview prep... (e.g., 'I have a Google SDE interview')"
+                      disabled={isLoading}
+                      className="flex-1"
+                    />
+                    <Button 
+                      type="submit"
+                      disabled={isLoading || !input.trim()}
+                      size="sm"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </form>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Press Enter to send, Shift+Enter for new line | Loading: {isLoading ? 'Yes' : 'No'}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
