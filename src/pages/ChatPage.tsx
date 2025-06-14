@@ -168,10 +168,12 @@ const ChatPage = () => {
 
     try {
       // Search for relevant experiences in the database
+      const searchTerms = userMessage.text.toLowerCase();
+      
       const { data: experiences, error } = await supabase
         .from('interview_posts')
         .select('*')
-        .or(`company.ilike.%${userMessage.text.toLowerCase()}%,role.ilike.%${userMessage.text.toLowerCase()}%,full_text.ilike.%${userMessage.text.toLowerCase()}%`)
+        .or(`company.ilike.%google%,company.ilike.%microsoft%,company.ilike.%amazon%,company.ilike.%meta%,company.ilike.%apple%,role.ilike.%engineer%,role.ilike.%developer%,full_text.ilike.%${searchTerms.replace(/[^a-zA-Z0-9\s]/g, '')}%`)
         .limit(10);
 
       console.log('Database search results:', { experiences, error, query: userMessage.text });
@@ -196,14 +198,14 @@ const ChatPage = () => {
       let aiResponse = "";
 
       if (relevantExperiences.length > 0) {
-        aiResponse = `Based on ${relevantExperiences.length} real interview experiences from candidates, here's what you should know about ${userMessage.text}:\n\n`;
+        aiResponse = `Based on ${relevantExperiences.length} real interview experiences, here's what you should know about ${userMessage.text}:\n\n`;
         
         // Add specific insights from each experience
         relevantExperiences.forEach((exp, index) => {
           aiResponse += `**${exp.company} - ${exp.role}:**\n${exp.snippet}\n\n`;
         });
         
-        aiResponse += `\n**Key Takeaways:**\n• Research the company's recent projects and initiatives\n• Practice coding problems on platforms like LeetCode\n• Prepare for behavioral questions using the STAR method\n• Review system design fundamentals if applicable`;
+        aiResponse += `**Key Takeaways:**\n• Research the company's recent projects and initiatives\n• Practice coding problems on platforms like LeetCode\n• Prepare for behavioral questions using the STAR method\n• Review system design fundamentals if applicable`;
       } else {
         aiResponse = `I don't have specific interview experiences for "${userMessage.text}" in our database yet. However, here are some general tips:\n\n• Research the company thoroughly\n• Practice relevant technical skills\n• Prepare behavioral examples using STAR method\n• Review common interview formats for this role\n\nTry asking about specific companies like "Google", "Microsoft", or interview types like "system design" or "behavioral questions".`;
       }
