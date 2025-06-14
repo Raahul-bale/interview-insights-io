@@ -52,17 +52,47 @@ function FormattedTimestamp({ timestamp }: { timestamp: number }) {
 
 const ChatPage = () => {
   const { toast } = useToast();
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "welcome-1",
-      sender: "ai",
-      text: "Hi! I'm your AI interview prep assistant. I can help you prepare for interviews based on real candidate experiences. Ask me about specific companies, roles, or interview types!",
-      timestamp: Date.now()
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    // Load chat from session storage
+    if (typeof window !== 'undefined') {
+      const savedMessages = sessionStorage.getItem('chatMessages');
+      if (savedMessages) {
+        try {
+          return JSON.parse(savedMessages);
+        } catch (error) {
+          console.error('Failed to parse saved messages:', error);
+        }
+      }
     }
-  ]);
+    return [
+      {
+        id: "welcome-1",
+        sender: "ai",
+        text: "Hi! I'm your AI interview prep assistant. I can help you prepare for interviews based on real candidate experiences. Ask me about specific companies, roles, or interview types!",
+        timestamp: Date.now()
+      }
+    ];
+  });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Save messages to session storage whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('chatMessages', JSON.stringify(messages));
+    }
+  }, [messages]);
+
+  // Clear chat on page unload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      sessionStorage.removeItem('chatMessages');
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -169,7 +199,7 @@ const ChatPage = () => {
             </p>
           </div>
 
-          <Card className="h-[600px] flex flex-col">
+          <Card className="h-[600px] flex flex-col overflow-hidden">
             <CardHeader className="border-b">
               <CardTitle className="text-lg">Chat with AI Assistant</CardTitle>
             </CardHeader>
@@ -187,11 +217,11 @@ const ChatPage = () => {
                       )}
                     >
                        <div className={cn(
-                         "max-w-[85%] rounded-lg px-4 py-3 text-sm break-words",
-                         message.sender === "user" 
-                           ? "bg-primary text-primary-foreground ml-8" 
-                           : "bg-muted text-foreground mr-8"
-                       )}>
+                          "max-w-[80%] rounded-lg px-4 py-3 text-sm break-words overflow-hidden",
+                          message.sender === "user" 
+                            ? "bg-primary text-primary-foreground ml-auto" 
+                            : "bg-muted text-foreground mr-auto"
+                        )}>
                         {message.isLoading ? (
                           <div className="flex items-center space-x-2">
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -199,7 +229,7 @@ const ChatPage = () => {
                           </div>
                         ) : (
                           <>
-                            <div className="whitespace-pre-wrap break-words">{message.text}</div>
+                            <div className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{message.text}</div>
                             
                             {/* Show relevant experiences for AI messages */}
                             {message.sender === "ai" && message.relevantExperiences && message.relevantExperiences.length > 0 && (
