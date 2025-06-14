@@ -123,10 +123,15 @@ const ExperienceDetailPage = () => {
           table: 'interview_posts',
           filter: `id=eq.${id}`
         },
-        (payload) => {
-          console.log('Real-time update received:', payload);
-          setExperience(prev => prev ? { ...prev, ...payload.new } : null);
-        }
+         (payload) => {
+           console.log('Real-time update received:', payload);
+           console.log('Updated experience data:', {
+             average_rating: payload.new.average_rating,
+             rating_count: payload.new.rating_count,
+             upvote_count: payload.new.upvote_count
+           });
+           setExperience(prev => prev ? { ...prev, ...payload.new } : null);
+         }
       )
       .subscribe();
 
