@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import TopExperiences from "@/components/TopExperiences";
 import SearchExperiences from "@/components/SearchExperiences";
+import AllExperiences from "@/components/AllExperiences";
 import ExperienceCard from "@/components/ExperienceCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -270,10 +271,14 @@ const HomePage = () => {
             </div>
             
             <Tabs defaultValue="top-experiences" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsList className="grid w-full grid-cols-3 mb-8">
                 <TabsTrigger value="top-experiences" className="flex items-center gap-2">
                   <Award className="w-4 h-4" />
                   Top Rated
+                </TabsTrigger>
+                <TabsTrigger value="all-experiences" className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  All Experiences
                 </TabsTrigger>
                 <TabsTrigger value="search" className="flex items-center gap-2">
                   <Search className="w-4 h-4" />
@@ -282,6 +287,9 @@ const HomePage = () => {
               </TabsList>
               <TabsContent value="top-experiences">
                 <TopExperiences />
+              </TabsContent>
+              <TabsContent value="all-experiences">
+                <AllExperiences />
               </TabsContent>
               <TabsContent value="search">
                 <SearchExperiences />
