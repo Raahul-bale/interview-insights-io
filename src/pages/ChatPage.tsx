@@ -4,8 +4,11 @@ import ChatMessage from "@/components/ChatMessage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const ChatPage = () => {
+  const { toast } = useToast();
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -28,117 +31,59 @@ const ChatPage = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentMessage = inputMessage;
     setInputMessage("");
     setIsLoading(true);
 
-    // Simulate AI response based on common interview queries
-    setTimeout(() => {
-      let aiResponse = "";
-      const query = inputMessage.toLowerCase();
+    try {
+      // Call the AI chat edge function
+      const { data, error } = await supabase.functions.invoke('ai-chat', {
+        body: { message: currentMessage }
+      });
 
-      if (query.includes("google") || query.includes("interview with google")) {
-        aiResponse = `Fetching relevant past experiences for Google interviews...
-
-Based on recent experiences shared by users:
-
-🔍 **Common Google Interview Pattern:**
-- Online Assessment (Medium difficulty)
-- 2-3 Technical Rounds
-- Focus on algorithms, system design, and behavioral questions
-
-📝 **Frequently Asked Questions:**
-- Two Sum and variations
-- LRU Cache implementation
-- System design: URL shortener, chat application
-- Behavioral: "Tell me about a time you overcame a challenge"
-
-💡 **Tips from successful candidates:**
-- Practice coding on whiteboard/paper
-- Explain your thought process clearly
-- Ask clarifying questions before jumping to solutions
-- Review Google's leadership principles
-
-Would you like me to find specific experiences for your role or dive deeper into any particular round?`;
-      } else if (query.includes("microsoft") || query.includes("interview with microsoft")) {
-        aiResponse = `Fetching relevant Microsoft interview experiences...
-
-Based on recent user submissions:
-
-🔍 **Microsoft Interview Structure:**
-- Coding Assessment
-- Technical Interview rounds
-- Behavioral assessment
-
-📝 **Common Question Types:**
-- Binary trees and graph problems
-- Database optimization
-- System design scenarios
-- Behavioral questions about teamwork
-
-💡 **Success Tips:**
-- Emphasize collaboration in behavioral answers
-- Show problem-solving approach step by step
-- Prepare for questions about Microsoft's products
-
-What specific role are you interviewing for? I can provide more targeted preparation advice.`;
-      } else if (query.includes("amazon")) {
-        aiResponse = `Fetching Amazon interview insights...
-
-🔍 **Amazon Interview Focus:**
-- Leadership Principles are crucial
-- Multiple technical rounds
-- Bar raiser interview
-
-📝 **Key Areas:**
-- Data structures and algorithms
-- System design and scalability
-- Customer obsession examples
-- Ownership and bias for action stories
-
-💡 **Preparation Strategy:**
-- Study all 16 Leadership Principles with examples
-- Practice STAR method for behavioral questions
-- Focus on large-scale system design
-
-Need help with specific leadership principles or technical topics?`;
-      } else if (query.includes("prepare") || query.includes("help") || query.includes("tips")) {
-        aiResponse = `I'd love to help you prepare! Here's how I can assist:
-
-🎯 **Preparation Areas:**
-- Company-specific interview patterns
-- Common technical questions
-- Behavioral interview strategies
-- System design approaches
-
-💬 **Just tell me:**
-- Which company you're interviewing with
-- What role you're applying for
-- Any specific areas you're worried about
-
-I'll pull relevant experiences from our database and give you targeted preparation advice!
-
-What would you like to focus on first?`;
-      } else {
-        aiResponse = `I understand you're looking for interview preparation help! 
-
-To give you the most relevant advice, could you please tell me:
-- Which company you're interviewing with?
-- What position you're applying for?
-- Any specific concerns or areas you'd like to focus on?
-
-I have access to hundreds of real interview experiences shared by candidates, and I can provide targeted preparation based on your specific situation.`;
+      if (error) {
+        console.error('AI chat error:', error);
+        throw new Error(error.message || 'Failed to get AI response');
       }
 
       const aiMessage = {
         id: messages.length + 2,
-        message: aiResponse,
+        message: data.response || 'Sorry, I could not generate a response.',
+        isUser: false,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        sources: data.sources || []
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
+
+      // Show success message if sources were found
+      if (data.sources && data.sources.length > 0) {
+        toast({
+          title: "Found relevant experiences!",
+          description: `Based on ${data.sources.length} similar interview experiences.`,
+        });
+      }
+
+    } catch (error) {
+      console.error('Error calling AI chat:', error);
+      
+      const errorMessage = {
+        id: messages.length + 2,
+        message: "Sorry, I'm having trouble connecting right now. This might be because the OpenAI API key is not configured. Please try again later or contact support.",
         isUser: false,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages(prev => [...prev, errorMessage]);
+      
+      toast({
+        title: "Connection Error",
+        description: "Unable to get AI response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
