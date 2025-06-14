@@ -142,8 +142,7 @@ const ChatPage = () => {
 
   const handleSubmit = async (e?: FormEvent<HTMLFormElement>) => {
     e?.preventDefault();
-    console.log('Submit clicked:', { input: input.trim(), isLoading, isInitializing });
-    if (!input.trim() || isLoading || isInitializing) return;
+    if (!input.trim() || isLoading) return;
 
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
