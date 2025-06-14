@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import StarRating from "@/components/StarRating";
 import UpvoteButton from "@/components/UpvoteButton";
+import CommentsSection from "@/components/CommentsSection";
 
 interface Round {
   type: string;
@@ -168,27 +169,27 @@ const ExperienceDetailPage = () => {
             {/* Header Card */}
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <CardTitle className="text-2xl">
+                <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+                  <div className="space-y-3 flex-1">
+                    <CardTitle className="text-2xl break-words">
                       {experience.company} - {experience.role}
                     </CardTitle>
-                    <div className="flex items-center gap-4 text-muted-foreground">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
-                        <User className="h-4 w-4" />
-                        <span>By {experience.user_name}</span>
+                        <User className="h-4 w-4 shrink-0" />
+                        <span className="break-words">By {experience.user_name}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
+                        <Calendar className="h-4 w-4 shrink-0" />
                         <span>{new Date(experience.date).toLocaleDateString()}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
+                        <Clock className="h-4 w-4 shrink-0" />
                         <span>Shared {new Date(experience.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 lg:shrink-0">
                     <StarRating
                       experienceId={experience.id}
                       averageRating={experience.average_rating}
@@ -255,6 +256,9 @@ const ExperienceDetailPage = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Comments Section */}
+            <CommentsSection experienceId={experience.id} />
           </div>
 
           {/* Sidebar - Related Experiences */}
