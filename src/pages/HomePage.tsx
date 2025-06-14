@@ -368,6 +368,48 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Recent Experiences Section */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Real Interview Experiences
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              See what top-rated experiences look like from candidates at leading companies
+            </p>
+          </div>
+          
+          <div className="max-w-6xl mx-auto">
+            <Tabs defaultValue="top-experiences" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-8">
+                <TabsTrigger value="top-experiences" className="flex items-center gap-2">
+                  <Award className="w-4 h-4" />
+                  Top Rated
+                </TabsTrigger>
+                <TabsTrigger value="all-experiences" className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  All Experiences
+                </TabsTrigger>
+                <TabsTrigger value="search" className="flex items-center gap-2">
+                  <Search className="w-4 h-4" />
+                  Search
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="top-experiences">
+                <TopExperiences />
+              </TabsContent>
+              <TabsContent value="all-experiences">
+                <AllExperiences />
+              </TabsContent>
+              <TabsContent value="search">
+                <SearchExperiences />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </section>
+
       {/* Authentication Section */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
@@ -377,7 +419,7 @@ const HomePage = () => {
                 Join the Community
               </h2>
               <p className="text-xl text-muted-foreground">
-                Get started with your free account and unlock premium interview preparation tools.
+                Get started with your free account to rate experiences and share your own
               </p>
             </div>
             
@@ -555,54 +597,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Recent Experiences */}
-      <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Real Interview Experiences
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              See what candidates are sharing about their interview journeys
-            </p>
-          </div>
-          
-          {experiencesLoading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="bg-muted rounded-lg h-64"></div>
-                </div>
-              ))}
-            </div>
-          ) : experiences.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {experiences.map((experience, index) => (
-                <div key={experience.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                  <ExperienceCard
-                    name={experience.user_name}
-                    company={experience.company}
-                    role={experience.role}
-                    date={new Date(experience.created_at).toLocaleDateString()}
-                    rounds={experience.rounds || []}
-                    outcome="Shared"
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">No experiences yet</h3>
-              <p className="text-muted-foreground mb-6">Be the first to share your interview experience!</p>
-              <Button disabled>
-                <FileText className="mr-2 h-4 w-4" />
-                Sign up to Share Experience
-              </Button>
-            </div>
-          )}
-        </div>
-      </section>
 
       {/* Testimonials Section */}
       <section className="py-20 bg-muted/30">
