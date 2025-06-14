@@ -1,61 +1,120 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, FormEvent } from "react";
 import Header from "@/components/Header";
-import ChatMessage from "@/components/ChatMessage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Bot, Send, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-// Define interface for source
+// Enhanced interfaces for structured responses
+interface RelevantExperience {
+  id: string;
+  company: string;
+  role: string;
+  similarity?: number;
+  snippet?: string;
+}
+
 interface Source {
   id: string;
   company: string;
   role: string;
 }
 
-// Define interface for message
-interface Message {
-  id: number;
-  message: string;
-  isUser: boolean;
-  timestamp: string;
+interface ChatMessage {
+  id: string;
+  sender: "user" | "ai";
+  text: string;
+  timestamp: number;
+  isLoading?: boolean;
+  relevantExperiences?: RelevantExperience[];
   sources?: Source[];
+}
+
+// Formatting function for timestamps
+function FormattedTimestamp({ timestamp }: { timestamp: number }) {
+  const [clientFormattedTime, setClientFormattedTime] = useState<string>('');
+
+  useEffect(() => {
+    setClientFormattedTime(
+      new Date(timestamp).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    );
+  }, [timestamp]);
+
+  if (!clientFormattedTime) {
+    return <div className="text-xs mt-1 opacity-70 text-right h-4">--:--</div>;
+  }
+
+  return (
+    <div className="text-xs mt-1 opacity-70 text-right">
+      {clientFormattedTime}
+    </div>
+  );
 }
 
 const ChatPage = () => {
   const { toast } = useToast();
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<ChatMessage[]>([
     {
-      id: 1,
-      message: "Hi! I'm your AI interview prep assistant. Tell me about your upcoming interview and I'll help you prepare with relevant experiences from other candidates.",
-      isUser: false,
-      timestamp: "Just now"
+      id: "welcome-1",
+      sender: "ai",
+      text: "Hi! I'm your AI interview prep assistant powered by real candidate experiences. Tell me about your upcoming interview and I'll help you prepare with insights from others who've been through similar processes.",
+      timestamp: Date.now()
     }
   ]);
-  const [inputMessage, setInputMessage] = useState("");
+  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
+  const scrollToBottom = () => {
+    if (scrollAreaRef.current) {
+      const scrollViewport = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
+      if (scrollViewport) {
+        scrollViewport.scrollTop = scrollViewport.scrollHeight;
+      }
+    }
+  };
 
-    const userMessage = {
-      id: messages.length + 1,
-      message: inputMessage,
-      isUser: true,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSubmit = async (e?: FormEvent<HTMLFormElement>) => {
+    e?.preventDefault();
+    if (!input.trim() || isLoading) return;
+
+    const userMessage: ChatMessage = {
+      id: `user-${Date.now()}`,
+      sender: "user",
+      text: input,
+      timestamp: Date.now(),
     };
 
     setMessages(prev => [...prev, userMessage]);
-    const currentMessage = inputMessage;
-    setInputMessage("");
+    setInput("");
     setIsLoading(true);
 
+    const aiThinkingMessage: ChatMessage = {
+      id: `ai-thinking-${Date.now()}`,
+      sender: "ai",
+      text: "Analyzing your query and searching through relevant interview experiences...",
+      isLoading: true,
+      timestamp: Date.now(),
+    };
+
+    setMessages(prev => [...prev, aiThinkingMessage]);
+    scrollToBottom();
+
     try {
-      // Call the AI chat edge function
       const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: { message: currentMessage }
+        body: { message: userMessage.text }
       });
 
       if (error) {
@@ -63,15 +122,16 @@ const ChatPage = () => {
         throw new Error(error.message || 'Failed to get AI response');
       }
 
-      const aiMessage = {
-        id: messages.length + 2,
-        message: data.response || 'Sorry, I could not generate a response.',
-        isUser: false,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        sources: data.sources || []
+      const aiResponseMessage: ChatMessage = {
+        id: `ai-${Date.now()}`,
+        sender: "ai",
+        text: data.response || 'Sorry, I could not generate a response.',
+        timestamp: Date.now(),
+        sources: data.sources || [],
+        relevantExperiences: data.relevantExperiences || []
       };
 
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages(prev => prev.filter(msg => msg.id !== aiThinkingMessage.id).concat(aiResponseMessage));
 
       // Show success message if sources were found
       if (data.sources && data.sources.length > 0) {
@@ -84,14 +144,19 @@ const ChatPage = () => {
     } catch (error) {
       console.error('Error calling AI chat:', error);
       
-      const errorMessage = {
-        id: messages.length + 2,
-        message: "Sorry, I'm having trouble connecting right now. This might be because the OpenAI API key is not configured. Please try again later or contact support.",
-        isUser: false,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      let errorText = "Sorry, I encountered an error while processing your request. Please try again.";
+      if (error instanceof Error && error.message) {
+        errorText = error.message;
+      }
+
+      const errorMessage: ChatMessage = {
+        id: `ai-error-${Date.now()}`,
+        sender: "ai",
+        text: errorText,
+        timestamp: Date.now(),
       };
 
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prev => prev.filter(msg => msg.id !== aiThinkingMessage.id).concat(errorMessage));
       
       toast({
         title: "Connection Error",
@@ -100,13 +165,14 @@ const ChatPage = () => {
       });
     } finally {
       setIsLoading(false);
+      scrollToBottom();
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      handleSubmit();
     }
   };
 
@@ -132,51 +198,89 @@ const ChatPage = () => {
             
             <CardContent className="flex-1 flex flex-col p-0">
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((message: Message) => (
-                  <ChatMessage
-                    key={message.id}
-                    message={message.message}
-                    isUser={message.isUser}
-                    timestamp={message.timestamp}
-                    sources={message.sources}
-                  />
-                ))}
-                
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-muted text-foreground max-w-[80%] rounded-lg px-4 py-2">
-                      <div className="flex items-center space-x-2">
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                        </div>
-                        <span className="text-sm text-muted-foreground">AI is thinking...</span>
+              <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
+                <div className="space-y-4">
+                  {messages.map((message: ChatMessage) => (
+                    <div
+                      key={message.id}
+                      className={cn(
+                        "flex w-full",
+                        message.sender === "user" ? "justify-end" : "justify-start"
+                      )}
+                    >
+                      <div className={cn(
+                        "max-w-[80%] rounded-lg px-4 py-3 text-sm",
+                        message.sender === "user" 
+                          ? "bg-primary text-primary-foreground ml-12" 
+                          : "bg-muted text-foreground mr-12"
+                      )}>
+                        {message.isLoading ? (
+                          <div className="flex items-center space-x-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>{message.text}</span>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="whitespace-pre-wrap">{message.text}</p>
+                            
+                            {/* Show relevant experiences for AI messages */}
+                            {message.sender === "ai" && message.relevantExperiences && message.relevantExperiences.length > 0 && (
+                              <div className="mt-3 pt-2 border-t border-muted-foreground/20">
+                                <p className="text-xs text-muted-foreground mb-2 flex items-center">
+                                  <Bot className="h-3 w-3 mr-1" />
+                                  Based on {message.relevantExperiences.length} relevant experiences:
+                                </p>
+                                <div className="flex flex-wrap gap-1">
+                                  {message.relevantExperiences.map((exp, index) => (
+                                    <Badge 
+                                      key={exp.id} 
+                                      variant="secondary" 
+                                      className="text-xs px-2 py-1"
+                                    >
+                                      {exp.company} - {exp.role}
+                                      {exp.similarity && (
+                                        <span className="ml-1 text-[10px] opacity-70">
+                                          {Math.round(exp.similarity * 100)}%
+                                        </span>
+                                      )}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            <FormattedTimestamp timestamp={message.timestamp} />
+                          </>
+                        )}
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  ))}
+                </div>
+              </ScrollArea>
 
               {/* Input Area */}
               <div className="border-t p-4">
-                <div className="flex space-x-2">
+                <form onSubmit={handleSubmit} className="flex space-x-2">
                   <Input
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Type your message... (e.g., 'I have an interview with Google for SDE role')"
+                    placeholder="Ask about your interview prep... (e.g., 'I have a Google SDE interview')"
                     disabled={isLoading}
                     className="flex-1"
                   />
                   <Button 
-                    onClick={handleSendMessage} 
-                    disabled={isLoading || !inputMessage.trim()}
+                    type="submit"
+                    disabled={isLoading || !input.trim()}
+                    size="sm"
                   >
-                    Send
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
                   </Button>
-                </div>
+                </form>
                 <p className="text-xs text-muted-foreground mt-2">
                   Press Enter to send, Shift+Enter for new line
                 </p>
@@ -187,23 +291,23 @@ const ChatPage = () => {
           {/* Quick Start Tips */}
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-                  onClick={() => setInputMessage("I have an interview with Google for Software Engineer role")}>
+                  onClick={() => setInput("I have an interview with Google for Software Engineer role")}>
               <CardContent className="p-4 text-center">
-                <h3 className="font-semibold text-sm mb-1">Google Interview</h3>
+                <h3 className="font-semibold text-sm mb-1">🔍 Google Interview</h3>
                 <p className="text-xs text-muted-foreground">Get Google-specific prep tips</p>
               </CardContent>
             </Card>
             <Card className="cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => setInputMessage("Help me prepare for system design interview")}>
+                  onClick={() => setInput("Help me prepare for system design interview")}>
               <CardContent className="p-4 text-center">
-                <h3 className="font-semibold text-sm mb-1">System Design</h3>
+                <h3 className="font-semibold text-sm mb-1">🏗️ System Design</h3>
                 <p className="text-xs text-muted-foreground">Learn from design experiences</p>
               </CardContent>
             </Card>
             <Card className="cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => setInputMessage("What are common behavioral interview questions?")}>
+                  onClick={() => setInput("What are common behavioral interview questions?")}>
               <CardContent className="p-4 text-center">
-                <h3 className="font-semibold text-sm mb-1">Behavioral Tips</h3>
+                <h3 className="font-semibold text-sm mb-1">💬 Behavioral Tips</h3>
                 <p className="text-xs text-muted-foreground">Master behavioral questions</p>
               </CardContent>
             </Card>
