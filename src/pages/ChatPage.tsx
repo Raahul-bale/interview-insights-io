@@ -172,7 +172,9 @@ const ChatPage = () => {
         .from('interview_posts')
         .select('*')
         .or(`company.ilike.%${userMessage.text.toLowerCase()}%,role.ilike.%${userMessage.text.toLowerCase()}%,full_text.ilike.%${userMessage.text.toLowerCase()}%`)
-        .limit(5);
+        .limit(10);
+
+      console.log('Database search results:', { experiences, error, query: userMessage.text });
 
       let relevantExperiences: RelevantExperience[] = [];
       let contextText = "";
@@ -182,16 +184,29 @@ const ChatPage = () => {
           id: exp.id,
           company: exp.company,
           role: exp.role,
-          snippet: exp.full_text ? exp.full_text.substring(0, 100) + "..." : ""
+          snippet: exp.full_text ? exp.full_text.substring(0, 150) + "..." : ""
         }));
 
         contextText = experiences.map(exp => 
-          `${exp.company} ${exp.role} interview: ${exp.full_text}`
-        ).join('\n\n');
+          `Company: ${exp.company}\nRole: ${exp.role}\nExperience: ${exp.full_text?.substring(0, 500)}`
+        ).join('\n\n---\n\n');
       }
 
-      // Generate AI response using local model
-      let aiResponse = "I understand you're looking for interview advice. Based on the experiences in our database, here are some general tips:\n\n";
+      // Generate AI response - prioritize database results
+      let aiResponse = "";
+
+      if (relevantExperiences.length > 0) {
+        aiResponse = `Based on ${relevantExperiences.length} real interview experiences from candidates, here's what you should know about ${userMessage.text}:\n\n`;
+        
+        // Add specific insights from each experience
+        relevantExperiences.forEach((exp, index) => {
+          aiResponse += `**${exp.company} - ${exp.role}:**\n${exp.snippet}\n\n`;
+        });
+        
+        aiResponse += `\n**Key Takeaways:**\n• Research the company's recent projects and initiatives\n• Practice coding problems on platforms like LeetCode\n• Prepare for behavioral questions using the STAR method\n• Review system design fundamentals if applicable`;
+      } else {
+        aiResponse = `I don't have specific interview experiences for "${userMessage.text}" in our database yet. However, here are some general tips:\n\n• Research the company thoroughly\n• Practice relevant technical skills\n• Prepare behavioral examples using STAR method\n• Review common interview formats for this role\n\nTry asking about specific companies like "Google", "Microsoft", or interview types like "system design" or "behavioral questions".`;
+      }
 
       if (aiPipeline && !isInitializing) {
         try {
@@ -207,7 +222,8 @@ Response:`;
             max_new_tokens: 200,
             temperature: 0.7,
             do_sample: true,
-            return_full_text: false
+            return_full_text: false,
+            pad_token_id: 50256
           });
 
           if (result && result[0] && result[0].generated_text) {
@@ -215,25 +231,7 @@ Response:`;
           }
         } catch (aiError) {
           console.error('AI generation error:', aiError);
-          // Fallback response
-          if (relevantExperiences.length > 0) {
-            aiResponse = `I found ${relevantExperiences.length} relevant interview experience(s) for your query. Here are some key insights:\n\n`;
-            aiResponse += relevantExperiences.map(exp => 
-              `• ${exp.company} - ${exp.role}: ${exp.snippet}`
-            ).join('\n');
-          } else {
-            aiResponse = "I'd be happy to help with your interview preparation! Could you provide more specific details about the company, role, or type of interview you're preparing for?";
-          }
-        }
-      } else {
-        // Fallback when AI is not ready
-        if (relevantExperiences.length > 0) {
-          aiResponse = `I found ${relevantExperiences.length} relevant interview experience(s) that might help:\n\n`;
-          aiResponse += relevantExperiences.map(exp => 
-            `• ${exp.company} - ${exp.role}: ${exp.snippet}`
-          ).join('\n');
-        } else {
-          aiResponse = "I'd be happy to help with your interview preparation! Could you provide more specific details about the company, role, or type of interview you're preparing for?";
+          // Keep the database-based response we already generated above
         }
       }
 
