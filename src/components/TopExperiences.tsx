@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import StarRating from "./StarRating";
 import UpvoteButton from "./UpvoteButton";
 
@@ -26,6 +27,7 @@ interface TopExperiencesProps {
 const TopExperiences = ({ limit = 5 }: TopExperiencesProps) => {
   const [topExperiences, setTopExperiences] = useState<TopExperience[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchTopExperiences = async () => {
     try {
@@ -100,7 +102,17 @@ const TopExperiences = ({ limit = 5 }: TopExperiencesProps) => {
       </div>
       <div className="space-y-4">
         {topExperiences.map((experience, index) => (
-          <Card key={experience.id} className="relative">
+          <Card 
+            key={experience.id} 
+            className="relative cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={(e) => {
+              // Don't navigate if clicking on interactive elements
+              if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('[role="button"]')) {
+                return;
+              }
+              navigate(`/experience/${experience.id}`);
+            }}
+          >
             {index < 3 && (
               <div className="absolute -top-2 -left-2 w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-bold text-sm">
                 {index + 1}

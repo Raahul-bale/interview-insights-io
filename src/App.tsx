@@ -8,6 +8,7 @@ import HomePage from "./pages/HomePage";
 import SubmitExperience from "./pages/SubmitExperience";
 import ChatPage from "./pages/ChatPage";
 import AuthPage from "./pages/AuthPage";
+import ExperienceDetailPage from "./pages/ExperienceDetailPage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -44,6 +45,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ChatPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/experience/:id" 
+              element={
+                <ProtectedRoute>
+                  <ExperienceDetailPage />
                 </ProtectedRoute>
               } 
             />

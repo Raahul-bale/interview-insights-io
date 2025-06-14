@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import StarRating from "./StarRating";
 import UpvoteButton from "./UpvoteButton";
 
@@ -26,6 +27,7 @@ const SearchExperiences = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const navigate = useNavigate();
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -79,7 +81,17 @@ const SearchExperiences = () => {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Search Results ({results.length})</h3>
           {results.map((experience) => (
-            <Card key={experience.id}>
+            <Card 
+              key={experience.id}
+              className="cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={(e) => {
+                // Don't navigate if clicking on interactive elements
+                if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('[role="button"]')) {
+                  return;
+                }
+                navigate(`/experience/${experience.id}`);
+              }}
+            >
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>

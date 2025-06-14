@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import StarRating from "./StarRating";
 import UpvoteButton from "./UpvoteButton";
 
@@ -26,6 +27,7 @@ interface AllExperiencesProps {
 const AllExperiences = ({ limit }: AllExperiencesProps) => {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchAllExperiences = async () => {
     try {
@@ -112,7 +114,17 @@ const AllExperiences = ({ limit }: AllExperiencesProps) => {
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {experiences.map((experience) => (
-          <Card key={experience.id} className="hover:shadow-lg transition-shadow">
+          <Card 
+            key={experience.id} 
+            className="hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={(e) => {
+              // Don't navigate if clicking on interactive elements
+              if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('[role="button"]')) {
+                return;
+              }
+              navigate(`/experience/${experience.id}`);
+            }}
+          >
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div className="flex-1">

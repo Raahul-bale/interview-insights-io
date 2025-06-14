@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Star, ThumbsUp, Edit } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface Round {
   type: string;
@@ -39,9 +39,24 @@ const ExperienceCard = ({
   upvoteCount = 0
 }: ExperienceCardProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const canEdit = user && userId && user.id === userId;
+  
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on buttons
+    if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('a')) {
+      return;
+    }
+    if (id) {
+      navigate(`/experience/${id}`);
+    }
+  };
+
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-300 border border-border">
+    <Card 
+      className="hover:shadow-lg transition-shadow duration-300 border border-border cursor-pointer" 
+      onClick={handleCardClick}
+    >
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <div>
