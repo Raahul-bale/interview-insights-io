@@ -99,6 +99,7 @@ const ProfilePage = () => {
 
     setLoading(true);
     try {
+      // Update profile
       const { error } = await supabase
         .from('profiles')
         .upsert({
@@ -116,6 +117,18 @@ const ProfilePage = () => {
 
       if (error) throw error;
 
+      // Update user_name in all interview posts to keep data consistent
+      if (profile.full_name) {
+        const { error: postsError } = await supabase
+          .from('interview_posts')
+          .update({ user_name: profile.full_name })
+          .eq('user_id', user.id);
+
+        if (postsError) {
+          console.error('Error updating interview posts user name:', postsError);
+        }
+      }
+
       // Update email in auth if changed
       if (profile.email !== user.email) {
         const { error: emailError } = await supabase.auth.updateUser({
@@ -130,6 +143,9 @@ const ProfilePage = () => {
           });
         }
       }
+
+      // Refresh profile data
+      await fetchProfile();
 
       toast({
         title: "Success",
