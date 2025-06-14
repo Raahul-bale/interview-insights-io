@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import ExperienceCard from "@/components/ExperienceCard";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,6 +40,10 @@ const HomePage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   
+  // Experiences state
+  const [experiences, setExperiences] = useState<any[]>([]);
+  const [experiencesLoading, setExperiencesLoading] = useState(true);
+  
   // Auth form states
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -60,6 +65,28 @@ const HomePage = () => {
       setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
     }, 5000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Fetch experiences
+  useEffect(() => {
+    const fetchExperiences = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('interview_posts')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(6);
+        
+        if (error) throw error;
+        setExperiences(data || []);
+      } catch (error) {
+        console.error('Error fetching experiences:', error);
+      } finally {
+        setExperiencesLoading(false);
+      }
+    };
+
+    fetchExperiences();
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -223,6 +250,57 @@ const HomePage = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Recent Experiences */}
+        <section className="py-20 bg-background">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Latest Interview Experiences
+              </h2>
+              <p className="text-xl text-muted-foreground">
+                Learn from real experiences shared by our community members
+              </p>
+            </div>
+            
+            {experiencesLoading ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="bg-muted rounded-lg h-64"></div>
+                  </div>
+                ))}
+              </div>
+            ) : experiences.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {experiences.map((experience, index) => (
+                  <div key={experience.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                    <ExperienceCard
+                      name={experience.user_name}
+                      company={experience.company}
+                      role={experience.role}
+                      date={new Date(experience.created_at).toLocaleDateString()}
+                      rounds={experience.rounds || []}
+                      outcome="Shared"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-foreground mb-2">No experiences yet</h3>
+                <p className="text-muted-foreground mb-6">Be the first to share your interview experience!</p>
+                <Link to="/submit">
+                  <Button>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Share Your Experience
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </section>
       </div>
@@ -483,8 +561,57 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* Recent Experiences */}
       <section className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Real Interview Experiences
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              See what candidates are sharing about their interview journeys
+            </p>
+          </div>
+          
+          {experiencesLoading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-muted rounded-lg h-64"></div>
+                </div>
+              ))}
+            </div>
+          ) : experiences.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {experiences.map((experience, index) => (
+                <div key={experience.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                  <ExperienceCard
+                    name={experience.user_name}
+                    company={experience.company}
+                    role={experience.role}
+                    date={new Date(experience.created_at).toLocaleDateString()}
+                    rounds={experience.rounds || []}
+                    outcome="Shared"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-foreground mb-2">No experiences yet</h3>
+              <p className="text-muted-foreground mb-6">Be the first to share your interview experience!</p>
+              <Button disabled>
+                <FileText className="mr-2 h-4 w-4" />
+                Sign up to Share Experience
+              </Button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
