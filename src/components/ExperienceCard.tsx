@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, ThumbsUp, Edit } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Star, ThumbsUp, Edit, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
+import { useProfile } from "@/hooks/useProfile";
 
 interface Round {
   type: string;
@@ -40,6 +42,7 @@ const ExperienceCard = ({
 }: ExperienceCardProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { profile } = useProfile(userId);
   const canEdit = user && userId && user.id === userId;
   
   const handleCardClick = (e: React.MouseEvent) => {
@@ -63,9 +66,24 @@ const ExperienceCard = ({
             <CardTitle className="text-lg font-semibold text-foreground">
               {company} - {role}
             </CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              By {name} • {date}
-            </p>
+            <div className="flex items-center gap-2 mt-2">
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={profile?.avatar_url || undefined} alt={name} />
+                <AvatarFallback className="text-xs">
+                  <User className="h-3 w-3" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="text-sm text-muted-foreground">
+                  By {profile?.full_name || name} • {date}
+                </span>
+                {profile?.bio && (
+                  <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                    {profile.bio}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {canEdit && id && (
