@@ -72,6 +72,30 @@ const SubmitExperience = () => {
       return;
     }
 
+    // Check monthly submission limit
+    const { data: canSubmit, error: limitError } = await supabase.rpc('check_monthly_submission_limit', {
+      user_uuid: user.id
+    });
+
+    if (limitError) {
+      console.error('Error checking submission limit:', limitError);
+      toast({
+        title: "Error",
+        description: "There was an error checking your submission limit.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!canSubmit) {
+      toast({
+        title: "Monthly Limit Reached",
+        description: "You can only submit one experience per month. Please wait until next month to submit another experience.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {

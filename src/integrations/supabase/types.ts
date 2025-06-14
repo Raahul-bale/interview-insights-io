@@ -9,14 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      experience_ratings: {
+        Row: {
+          created_at: string
+          experience_id: string
+          id: string
+          rating: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          experience_id: string
+          id?: string
+          rating: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          experience_id?: string
+          id?: string
+          rating?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experience_ratings_experience_id_fkey"
+            columns: ["experience_id"]
+            isOneToOne: false
+            referencedRelation: "interview_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       interview_posts: {
         Row: {
+          average_rating: number | null
           company: string
           created_at: string
           date: string
           embedding: string | null
           full_text: string
           id: string
+          rating_count: number | null
           role: string
           rounds: Json
           updated_at: string
@@ -24,12 +61,14 @@ export type Database = {
           user_name: string
         }
         Insert: {
+          average_rating?: number | null
           company: string
           created_at?: string
           date?: string
           embedding?: string | null
           full_text: string
           id?: string
+          rating_count?: number | null
           role: string
           rounds?: Json
           updated_at?: string
@@ -37,12 +76,14 @@ export type Database = {
           user_name: string
         }
         Update: {
+          average_rating?: number | null
           company?: string
           created_at?: string
           date?: string
           embedding?: string | null
           full_text?: string
           id?: string
+          rating_count?: number | null
           role?: string
           rounds?: Json
           updated_at?: string
@@ -87,12 +128,30 @@ export type Database = {
         Args: { "": string } | { "": unknown }
         Returns: unknown
       }
+      check_monthly_submission_limit: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
       extract_query_context: {
         Args: { user_query: string }
         Returns: {
           companies: string[]
           roles: string[]
           topics: string[]
+        }[]
+      }
+      get_top_experiences: {
+        Args: { limit_count?: number }
+        Returns: {
+          id: string
+          company: string
+          role: string
+          user_name: string
+          date: string
+          rounds: Json
+          average_rating: number
+          rating_count: number
+          created_at: string
         }[]
       }
       halfvec_avg: {
@@ -182,6 +241,21 @@ export type Database = {
           full_text: string
           similarity: number
           relevance_score: number
+        }[]
+      }
+      search_experiences: {
+        Args: { search_query: string; limit_count?: number }
+        Returns: {
+          id: string
+          company: string
+          role: string
+          user_name: string
+          date: string
+          rounds: Json
+          full_text: string
+          average_rating: number
+          rating_count: number
+          created_at: string
         }[]
       }
       sparsevec_out: {
