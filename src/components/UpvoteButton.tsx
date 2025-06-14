@@ -78,6 +78,7 @@ const UpvoteButton = ({
         setHasUpvoted(true);
       }
 
+      console.log('Upvote action completed, calling onUpvoteUpdate');
       onUpvoteUpdate?.();
     } catch (error) {
       console.error('Error updating upvote:', error);

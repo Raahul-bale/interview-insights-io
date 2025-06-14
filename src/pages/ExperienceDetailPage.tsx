@@ -130,6 +130,7 @@ const ExperienceDetailPage = () => {
   }, [id]);
 
   const refreshExperience = () => {
+    console.log('refreshExperience called - fetching updated data');
     fetchExperience();
   };
 

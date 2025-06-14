@@ -75,6 +75,7 @@ const StarRating = ({
       if (error) throw error;
 
       setUserRating(rating);
+      console.log('Rating submitted successfully, calling onRatingUpdate');
       toast({
         title: "Rating Submitted",
         description: "Thank you for your feedback!"
