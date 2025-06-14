@@ -107,7 +107,7 @@ const StarRating = ({
           >
             <Star
               className={`w-4 h-4 ${
-                star <= (hoveredRating || userRating)
+                star <= (hoveredRating || userRating || (user ? 0 : averageRating))
                   ? "fill-yellow-400 text-yellow-400"
                   : "text-muted-foreground"
               }`}
