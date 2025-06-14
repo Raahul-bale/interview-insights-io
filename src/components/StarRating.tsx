@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -21,9 +21,34 @@ const StarRating = ({
   onRatingUpdate 
 }: StarRatingProps) => {
   const [hoveredRating, setHoveredRating] = useState(0);
+  const [userRating, setUserRating] = useState(currentRating);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  useEffect(() => {
+    const fetchUserRating = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('experience_ratings')
+          .select('rating')
+          .eq('user_id', user.id)
+          .eq('experience_id', experienceId)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (data) {
+          setUserRating(data.rating);
+        }
+      } catch (error) {
+        console.error('Error fetching user rating:', error);
+      }
+    };
+
+    fetchUserRating();
+  }, [user, experienceId]);
 
   const handleRating = async (rating: number) => {
     if (!user) {
@@ -47,6 +72,7 @@ const StarRating = ({
 
       if (error) throw error;
 
+      setUserRating(rating);
       toast({
         title: "Rating Submitted",
         description: "Thank you for your feedback!"
@@ -81,7 +107,7 @@ const StarRating = ({
           >
             <Star
               className={`w-4 h-4 ${
-                star <= (hoveredRating || currentRating)
+                star <= (hoveredRating || userRating)
                   ? "fill-yellow-400 text-yellow-400"
                   : "text-muted-foreground"
               }`}
