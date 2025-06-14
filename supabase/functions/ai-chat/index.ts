@@ -39,7 +39,17 @@ serve(async (req) => {
 
     console.log('Processing message:', message);
 
-    // Step 1: Generate embedding for user message
+    // Step 1: Extract context from user query for better matching
+    const { data: queryContext } = await supabase.rpc('extract_query_context', {
+      user_query: message
+    });
+
+    const companies = queryContext?.[0]?.companies || [];
+    const roles = queryContext?.[0]?.roles || [];
+    
+    console.log('Extracted context - Companies:', companies, 'Roles:', roles);
+
+    // Step 2: Generate embedding for user message
     const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
       method: 'POST',
       headers: {
@@ -63,31 +73,36 @@ serve(async (req) => {
     const embeddingData = await embeddingResponse.json();
     const queryEmbedding = embeddingData.data[0].embedding;
 
-    // Step 2: Search for similar interview posts using vector similarity
+    // Step 3: Search for similar interview posts using enhanced vector similarity
     const { data: similarPosts, error: searchError } = await supabase.rpc(
-      'match_interview_posts',
+      'match_interview_posts_enhanced',
       {
         query_embedding: queryEmbedding,
-        match_threshold: 0.7,
-        match_count: 5
+        match_threshold: 0.6,
+        match_count: 8,
+        company_filter: companies.length > 0 ? companies[0] : null,
+        role_filter: roles.length > 0 ? roles[0] : null
       }
     );
 
     if (searchError) {
-      console.error('Vector search error:', searchError);
-      // Fallback to regular search if vector search fails
+      console.error('Enhanced vector search error:', searchError);
+      // Fallback to regular search if enhanced search fails
       const { data: fallbackPosts } = await supabase
         .from('interview_posts')
         .select('*')
         .limit(3);
       
-      return await generateResponse(fallbackPosts || [], message, openAIApiKey);
+      return await generateResponse(fallbackPosts || [], message, openAIApiKey, queryContext?.[0]);
     }
 
     console.log('Found similar posts:', similarPosts?.length || 0);
+    if (similarPosts && similarPosts.length > 0) {
+      console.log('Top relevance scores:', similarPosts.slice(0, 3).map(p => p.relevance_score));
+    }
 
-    // Step 3: Generate AI response using similar posts
-    return await generateResponse(similarPosts || [], message, openAIApiKey);
+    // Step 4: Generate AI response using enhanced similar posts
+    return await generateResponse(similarPosts || [], message, openAIApiKey, queryContext?.[0]);
 
   } catch (error) {
     console.error('Error in ai-chat function:', error);
@@ -98,13 +113,17 @@ serve(async (req) => {
   }
 });
 
-async function generateResponse(posts: any[], userMessage: string, apiKey: string) {
+async function generateResponse(posts: any[], userMessage: string, apiKey: string, queryContext?: any) {
   // Enhanced context extraction with more detailed analysis
   const relevantContext = posts.map((post, index) => {
     const rounds = Array.isArray(post.rounds) ? post.rounds : [];
     const roundsDetail = rounds.map(round => 
       `  - ${round.roundName || 'Round'}: ${round.question || 'N/A'}\n    Approach: ${round.userAnswer || 'N/A'}`
     ).join('\n');
+    
+    const relevanceInfo = post.relevance_score ? 
+      `Relevance Score: ${(post.relevance_score * 100).toFixed(1)}%` :
+      `Similarity Score: ${(post.similarity * 100).toFixed(1)}%`;
     
     return `Experience ${index + 1}:
 Company: ${post.company}
@@ -113,30 +132,50 @@ Candidate: ${post.user_name}
 Interview Rounds:
 ${roundsDetail || '  No detailed rounds available'}
 Overall Experience: ${post.full_text}
-Similarity Score: ${(post.similarity * 100).toFixed(1)}%
+${relevanceInfo}
 ---`;
   }).join('\n\n');
 
-  // Enhanced system prompt with better learning capabilities
-  const systemPrompt = `You are an advanced AI interview preparation assistant trained on real candidate experiences. Analyze the provided interview data to give personalized, actionable advice.
+  // Extract context information for enhanced responses
+  const contextInfo = queryContext ? {
+    companies: queryContext.companies || [],
+    roles: queryContext.roles || [],
+    topics: queryContext.topics || []
+  } : { companies: [], roles: [], topics: [] };
+
+  // Enhanced system prompt with better learning capabilities and context awareness
+  const systemPrompt = `You are an advanced AI interview preparation assistant trained on real candidate experiences. You have access to a database of interview experiences and use vector similarity search to find the most relevant matches.
+
+QUERY CONTEXT DETECTED:
+- Companies mentioned: ${contextInfo.companies.join(', ') || 'None detected'}
+- Roles mentioned: ${contextInfo.roles.join(', ') || 'None detected'}  
+- Topics mentioned: ${contextInfo.topics.join(', ') || 'None detected'}
 
 REAL INTERVIEW EXPERIENCES FROM DATABASE:
 ${relevantContext || 'No specific experiences found in database, but I can provide general interview guidance based on common patterns.'}
 
-CORE INSTRUCTIONS:
-1. ANALYZE PATTERNS: Look for common themes across the experiences (question types, company culture, interview structure)
-2. PROVIDE SPECIFIC EXAMPLES: Reference actual questions and approaches from the database
-3. PERSONALIZE ADVICE: Tailor recommendations based on the user's specific query and role
-4. HIGHLIGHT INSIGHTS: Extract key learnings from successful candidates
-5. SUGGEST PREPARATION STRATEGIES: Based on real patterns from the data
+ENHANCED AI TRAINING INSTRUCTIONS:
+1. PATTERN ANALYSIS: Analyze patterns across multiple experiences to identify common themes, question types, and successful approaches
+2. CONTEXTUAL LEARNING: Use the detected context (companies, roles, topics) to provide highly targeted advice
+3. EXPERIENCE SYNTHESIS: Combine insights from multiple candidates to create comprehensive preparation strategies
+4. ADAPTIVE RESPONSES: Tailor your response style and content based on the user's specific situation and the quality of matched experiences
+5. CONTINUOUS IMPROVEMENT: Learn from the relevance scores to understand which experiences are most valuable for different types of queries
 
-RESPONSE FORMAT:
-- Start with a brief analysis of relevant patterns found
-- Provide specific, actionable advice with examples from the experiences
-- Include recommended preparation steps
-- End with encouragement and confidence-building tips
+RESPONSE STRATEGY:
+- If high-relevance matches found (>80%): Provide detailed, specific advice based on those exact experiences
+- If moderate-relevance matches found (60-80%): Combine insights from multiple experiences and extrapolate patterns
+- If low-relevance matches found (<60%): Use general patterns from the database plus standard interview advice
+- Always reference specific examples from the database when possible
+- Provide actionable next steps and preparation strategies
 
-Remember: Your knowledge comes from real candidates who succeeded. Use their experiences to help the current user prepare effectively.`;
+LEARNING FEEDBACK LOOP:
+The AI system learns from:
+- Vector similarity scores between user queries and existing experiences
+- Context extraction accuracy (companies, roles, topics)
+- Relevance scoring that combines semantic similarity with exact matches
+- User engagement patterns and follow-up questions
+
+Remember: You are not just providing advice - you are a learning system that gets smarter with each interaction by understanding what makes interview experiences relevant and valuable to different types of queries.`;
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',

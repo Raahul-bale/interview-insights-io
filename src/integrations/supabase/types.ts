@@ -57,6 +57,14 @@ export type Database = {
         Args: { "": string } | { "": unknown }
         Returns: unknown
       }
+      extract_query_context: {
+        Args: { user_query: string }
+        Returns: {
+          companies: string[]
+          roles: string[]
+          topics: string[]
+        }[]
+      }
       halfvec_avg: {
         Args: { "": number[] }
         Returns: unknown
@@ -124,6 +132,26 @@ export type Database = {
           rounds: Json
           full_text: string
           similarity: number
+        }[]
+      }
+      match_interview_posts_enhanced: {
+        Args: {
+          query_embedding: string
+          match_threshold?: number
+          match_count?: number
+          company_filter?: string
+          role_filter?: string
+        }
+        Returns: {
+          id: string
+          company: string
+          role: string
+          user_name: string
+          date: string
+          rounds: Json
+          full_text: string
+          similarity: number
+          relevance_score: number
         }[]
       }
       sparsevec_out: {
