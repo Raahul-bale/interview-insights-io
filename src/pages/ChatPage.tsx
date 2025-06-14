@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, FormEvent } from "react";
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Send, Loader2 } from "lucide-react";
+import { Bot, Send, Loader2, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { chatService, type RelevantExperience } from "@/services/chatService";
 
@@ -250,25 +251,31 @@ const ChatPage = () => {
                               <div className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{message.text}</div>
                               
                               {/* Show relevant experiences for AI messages */}
-                              {message.sender === "ai" && message.relevantExperiences && message.relevantExperiences.length > 0 && (
-                                <div className="mt-3 pt-2 border-t border-muted-foreground/20">
-                                  <p className="text-xs text-muted-foreground mb-2 flex items-center">
-                                    <Bot className="h-3 w-3 mr-1" />
-                                    Based on {message.relevantExperiences.length} relevant experiences:
-                                  </p>
-                                  <div className="flex flex-wrap gap-1">
-                                    {message.relevantExperiences.map((exp, index) => (
-                                       <Badge 
+                               {message.sender === "ai" && message.relevantExperiences && message.relevantExperiences.length > 0 && (
+                                 <div className="mt-3 pt-2 border-t border-muted-foreground/20">
+                                   <p className="text-xs text-muted-foreground mb-2 flex items-center">
+                                     <Bot className="h-3 w-3 mr-1" />
+                                     Based on {message.relevantExperiences.length} relevant experiences (click to view details):
+                                   </p>
+                                   <div className="flex flex-wrap gap-1">
+                                     {message.relevantExperiences.map((exp, index) => (
+                                       <Link 
                                          key={exp.id} 
-                                         variant="secondary" 
-                                         className="text-xs px-2 py-1"
+                                         to={`/experience/${exp.id}`}
+                                         className="inline-block"
                                        >
-                                         {exp.company} - {exp.role}
-                                       </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
+                                         <Badge 
+                                           variant="secondary" 
+                                           className="text-xs px-2 py-1 cursor-pointer hover:bg-secondary/80 transition-colors flex items-center gap-1"
+                                         >
+                                           {exp.company} - {exp.role}
+                                           <ExternalLink className="h-2 w-2" />
+                                         </Badge>
+                                       </Link>
+                                     ))}
+                                   </div>
+                                 </div>
+                               )}
                               
                               <FormattedTimestamp timestamp={message.timestamp} />
                             </>
