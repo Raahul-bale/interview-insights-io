@@ -170,11 +170,33 @@ const ChatPage = () => {
       // Search for relevant experiences in the database
       const searchTerms = userMessage.text.toLowerCase();
       
+      // Improved search logic for common interview topics
+      let searchQuery = '';
+      if (searchTerms.includes('google')) {
+        searchQuery = 'company.ilike.%google%';
+      } else if (searchTerms.includes('microsoft')) {
+        searchQuery = 'company.ilike.%microsoft%';
+      } else if (searchTerms.includes('amazon')) {
+        searchQuery = 'company.ilike.%amazon%';
+      } else if (searchTerms.includes('meta') || searchTerms.includes('facebook')) {
+        searchQuery = 'company.ilike.%meta%,company.ilike.%facebook%';
+      } else if (searchTerms.includes('system design')) {
+        searchQuery = 'full_text.ilike.%system design%,role.ilike.%design%';
+      } else if (searchTerms.includes('behavioral')) {
+        searchQuery = 'full_text.ilike.%behavioral%';
+      } else if (searchTerms.includes('coding') || searchTerms.includes('algorithm')) {
+        searchQuery = 'full_text.ilike.%coding%,full_text.ilike.%algorithm%';
+      } else {
+        // General search
+        const cleanedTerms = searchTerms.replace(/[^a-zA-Z0-9\s]/g, '');
+        searchQuery = `company.ilike.%${cleanedTerms}%,role.ilike.%${cleanedTerms}%,full_text.ilike.%${cleanedTerms}%`;
+      }
+      
       const { data: experiences, error } = await supabase
         .from('interview_posts')
         .select('*')
-        .or(`company.ilike.%google%,company.ilike.%microsoft%,company.ilike.%amazon%,company.ilike.%meta%,company.ilike.%apple%,role.ilike.%engineer%,role.ilike.%developer%,full_text.ilike.%${searchTerms.replace(/[^a-zA-Z0-9\s]/g, '')}%`)
-        .limit(10);
+        .or(searchQuery)
+        .limit(5);
 
       console.log('Database search results:', { experiences, error, query: userMessage.text });
 
@@ -198,16 +220,25 @@ const ChatPage = () => {
       let aiResponse = "";
 
       if (relevantExperiences.length > 0) {
-        aiResponse = `Based on ${relevantExperiences.length} real interview experiences, here's what you should know about ${userMessage.text}:\n\n`;
+        aiResponse = `Based on ${relevantExperiences.length} real interview experience(s), here's what you should know:\n\n`;
         
         // Add specific insights from each experience
         relevantExperiences.forEach((exp, index) => {
-          aiResponse += `**${exp.company} - ${exp.role}:**\n${exp.snippet}\n\n`;
+          aiResponse += `${exp.company} - ${exp.role}:\n${exp.snippet}\n\n`;
         });
         
-        aiResponse += `**Key Takeaways:**\n• Research the company's recent projects and initiatives\n• Practice coding problems on platforms like LeetCode\n• Prepare for behavioral questions using the STAR method\n• Review system design fundamentals if applicable`;
+        aiResponse += `Key Takeaways:\n• Research the company's recent projects and initiatives\n• Practice coding problems on platforms like LeetCode\n• Prepare for behavioral questions using the STAR method\n• Review system design fundamentals if applicable`;
       } else {
-        aiResponse = `I don't have specific interview experiences for "${userMessage.text}" in our database yet. However, here are some general tips:\n\n• Research the company thoroughly\n• Practice relevant technical skills\n• Prepare behavioral examples using STAR method\n• Review common interview formats for this role\n\nTry asking about specific companies like "Google", "Microsoft", or interview types like "system design" or "behavioral questions".`;
+        // Provide specific advice for common questions
+        if (searchTerms.includes('system design')) {
+          aiResponse = `System Design Interview Tips:\n\n• Start with clarifying requirements and constraints\n• Design high-level architecture first\n• Discuss data storage and database choices\n• Consider scalability, load balancing, and caching\n• Talk about monitoring and failure handling\n\nTry asking about specific companies for more targeted advice!`;
+        } else if (searchTerms.includes('behavioral')) {
+          aiResponse = `Behavioral Interview Tips:\n\n• Use the STAR method (Situation, Task, Action, Result)\n• Prepare examples from past experiences\n• Show leadership and problem-solving skills\n• Be specific with metrics and outcomes\n• Practice common questions like "Tell me about a time when..."\n\nTry asking about specific companies for their behavioral interview style!`;
+        } else if (searchTerms.includes('coding') || searchTerms.includes('algorithm')) {
+          aiResponse = `Coding Interview Tips:\n\n• Practice on LeetCode, HackerRank, or similar platforms\n• Master data structures (arrays, trees, graphs, hash tables)\n• Learn common algorithms (sorting, searching, dynamic programming)\n• Think out loud during the interview\n• Start with brute force, then optimize\n\nTry asking about specific companies for their coding interview format!`;
+        } else {
+          aiResponse = `I'd be happy to help with your interview preparation! Here are some general tips:\n\n• Research the company thoroughly\n• Practice relevant technical skills\n• Prepare behavioral examples using STAR method\n• Review common interview formats for this role\n\nFor more specific advice, try asking about:\n• Specific companies (Google, Microsoft, Amazon, etc.)\n• Interview types (system design, behavioral, coding)\n• Specific roles (Software Engineer, Product Manager, etc.)`;
+        }
       }
 
       if (aiPipeline && !isInitializing) {
@@ -317,12 +348,12 @@ Response:`;
                         message.sender === "user" ? "justify-end" : "justify-start"
                       )}
                     >
-                      <div className={cn(
-                        "max-w-[80%] rounded-lg px-4 py-3 text-sm",
-                        message.sender === "user" 
-                          ? "bg-primary text-primary-foreground ml-12" 
-                          : "bg-muted text-foreground mr-12"
-                      )}>
+                       <div className={cn(
+                         "max-w-[85%] rounded-lg px-4 py-3 text-sm break-words",
+                         message.sender === "user" 
+                           ? "bg-primary text-primary-foreground ml-8" 
+                           : "bg-muted text-foreground mr-8"
+                       )}>
                         {message.isLoading ? (
                           <div className="flex items-center space-x-2">
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -330,7 +361,7 @@ Response:`;
                           </div>
                         ) : (
                           <>
-                            <p className="whitespace-pre-wrap">{message.text}</p>
+                            <div className="whitespace-pre-wrap break-words">{message.text}</div>
                             
                             {/* Show relevant experiences for AI messages */}
                             {message.sender === "ai" && message.relevantExperiences && message.relevantExperiences.length > 0 && (
