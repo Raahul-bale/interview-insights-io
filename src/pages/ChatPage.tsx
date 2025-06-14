@@ -7,8 +7,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Send, Loader2 } from "lucide-react";
+import { Bot, Send, Loader2, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { pipeline, Pipeline } from "@huggingface/transformers";
 
 // Enhanced interfaces for structured responses
 interface RelevantExperience {
@@ -61,17 +62,70 @@ function FormattedTimestamp({ timestamp }: { timestamp: number }) {
 
 const ChatPage = () => {
   const { toast } = useToast();
+  const [aiPipeline, setAiPipeline] = useState<any>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome-1",
       sender: "ai",
-      text: "Hi! I'm your AI interview prep assistant powered by real candidate experiences. Tell me about your upcoming interview and I'll help you prepare with insights from others who've been through similar processes.",
+      text: "Hi! I'm your AI interview prep assistant running locally in your browser. I'll help you prepare with insights from real candidate experiences. Please wait while I initialize...",
       timestamp: Date.now()
     }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Initialize AI pipeline
+  useEffect(() => {
+    const initializeAI = async () => {
+      try {
+        setIsInitializing(true);
+        console.log('Initializing AI pipeline...');
+        
+        // Use a small, efficient model for text generation
+        const textGenerator = await pipeline(
+          'text-generation',
+          'onnx-community/Qwen2.5-0.5B-Instruct',
+          { 
+            device: 'wasm'
+          }
+        );
+        
+        setAiPipeline(textGenerator);
+        
+        // Update welcome message
+        setMessages(prev => prev.map(msg => 
+          msg.id === "welcome-1" 
+            ? { ...msg, text: "Hi! I'm your AI interview prep assistant running locally in your browser. I can help you prepare for interviews based on real candidate experiences. Ask me about specific companies, roles, or interview types!" }
+            : msg
+        ));
+        
+        toast({
+          title: "AI Ready!",
+          description: "Local AI assistant is now ready to help with your interview prep.",
+        });
+        
+      } catch (error) {
+        console.error('Failed to initialize AI:', error);
+        setMessages(prev => prev.map(msg => 
+          msg.id === "welcome-1" 
+            ? { ...msg, text: "Sorry, I couldn't initialize properly. You can still search through interview experiences, but AI responses may be limited." }
+            : msg
+        ));
+        
+        toast({
+          title: "AI Initialization Failed",
+          description: "Using fallback mode. Some features may be limited.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    initializeAI();
+  }, []);
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -88,7 +142,7 @@ const ChatPage = () => {
 
   const handleSubmit = async (e?: FormEvent<HTMLFormElement>) => {
     e?.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || isInitializing) return;
 
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -113,54 +167,109 @@ const ChatPage = () => {
     scrollToBottom();
 
     try {
-      const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: { message: userMessage.text }
-      });
+      // Search for relevant experiences in the database
+      const { data: experiences, error } = await supabase
+        .from('interview_posts')
+        .select('*')
+        .or(`company.ilike.%${userMessage.text.toLowerCase()}%,role.ilike.%${userMessage.text.toLowerCase()}%,full_text.ilike.%${userMessage.text.toLowerCase()}%`)
+        .limit(5);
 
-      if (error) {
-        console.error('AI chat error:', error);
-        throw new Error(error.message || 'Failed to get AI response');
+      let relevantExperiences: RelevantExperience[] = [];
+      let contextText = "";
+
+      if (experiences && experiences.length > 0) {
+        relevantExperiences = experiences.map(exp => ({
+          id: exp.id,
+          company: exp.company,
+          role: exp.role,
+          snippet: exp.full_text ? exp.full_text.substring(0, 100) + "..." : ""
+        }));
+
+        contextText = experiences.map(exp => 
+          `${exp.company} ${exp.role} interview: ${exp.full_text}`
+        ).join('\n\n');
+      }
+
+      // Generate AI response using local model
+      let aiResponse = "I understand you're looking for interview advice. Based on the experiences in our database, here are some general tips:\n\n";
+
+      if (aiPipeline && !isInitializing) {
+        try {
+          const prompt = `You are an interview preparation assistant. A user asked: "${userMessage.text}"
+
+${contextText ? `Based on these real interview experiences:\n${contextText}\n\n` : ''}
+
+Provide helpful, specific advice for interview preparation. Keep your response concise and actionable. Focus on practical tips.
+
+Response:`;
+
+          const result = await aiPipeline(prompt, {
+            max_new_tokens: 200,
+            temperature: 0.7,
+            do_sample: true,
+            return_full_text: false
+          });
+
+          if (result && result[0] && result[0].generated_text) {
+            aiResponse = result[0].generated_text.trim();
+          }
+        } catch (aiError) {
+          console.error('AI generation error:', aiError);
+          // Fallback response
+          if (relevantExperiences.length > 0) {
+            aiResponse = `I found ${relevantExperiences.length} relevant interview experience(s) for your query. Here are some key insights:\n\n`;
+            aiResponse += relevantExperiences.map(exp => 
+              `• ${exp.company} - ${exp.role}: ${exp.snippet}`
+            ).join('\n');
+          } else {
+            aiResponse = "I'd be happy to help with your interview preparation! Could you provide more specific details about the company, role, or type of interview you're preparing for?";
+          }
+        }
+      } else {
+        // Fallback when AI is not ready
+        if (relevantExperiences.length > 0) {
+          aiResponse = `I found ${relevantExperiences.length} relevant interview experience(s) that might help:\n\n`;
+          aiResponse += relevantExperiences.map(exp => 
+            `• ${exp.company} - ${exp.role}: ${exp.snippet}`
+          ).join('\n');
+        } else {
+          aiResponse = "I'd be happy to help with your interview preparation! Could you provide more specific details about the company, role, or type of interview you're preparing for?";
+        }
       }
 
       const aiResponseMessage: ChatMessage = {
         id: `ai-${Date.now()}`,
         sender: "ai",
-        text: data.response || 'Sorry, I could not generate a response.',
+        text: aiResponse,
         timestamp: Date.now(),
-        sources: data.sources || [],
-        relevantExperiences: data.relevantExperiences || []
+        relevantExperiences: relevantExperiences
       };
 
       setMessages(prev => prev.filter(msg => msg.id !== aiThinkingMessage.id).concat(aiResponseMessage));
 
-      // Show success message if sources were found
-      if (data.sources && data.sources.length > 0) {
+      // Show success message if experiences were found
+      if (relevantExperiences.length > 0) {
         toast({
           title: "Found relevant experiences!",
-          description: `Based on ${data.sources.length} similar interview experiences.`,
+          description: `Based on ${relevantExperiences.length} similar interview experiences.`,
         });
       }
 
     } catch (error) {
-      console.error('Error calling AI chat:', error);
+      console.error('Error in AI chat:', error);
       
-      let errorText = "Sorry, I encountered an error while processing your request. Please try again.";
-      if (error instanceof Error && error.message) {
-        errorText = error.message;
-      }
-
       const errorMessage: ChatMessage = {
         id: `ai-error-${Date.now()}`,
         sender: "ai",
-        text: errorText,
+        text: "Sorry, I encountered an error while processing your request. Please try again or ask a different question.",
         timestamp: Date.now(),
       };
 
       setMessages(prev => prev.filter(msg => msg.id !== aiThinkingMessage.id).concat(errorMessage));
       
       toast({
-        title: "Connection Error",
-        description: "Unable to get AI response. Please try again.",
+        title: "Processing Error",
+        description: "Unable to generate response. Please try again.",
         variant: "destructive",
       });
     } finally {
