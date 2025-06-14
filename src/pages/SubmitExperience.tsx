@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface Round {
   type: string;
   questions: string;
+  answers: string;
   difficulty: string;
 }
 
@@ -30,11 +31,11 @@ const SubmitExperience = () => {
   });
   
   const [rounds, setRounds] = useState<Round[]>([
-    { type: "", questions: "", difficulty: "" }
+    { type: "", questions: "", answers: "", difficulty: "" }
   ]);
 
   const addRound = () => {
-    setRounds([...rounds, { type: "", questions: "", difficulty: "" }]);
+    setRounds([...rounds, { type: "", questions: "", answers: "", difficulty: "" }]);
   };
 
   const removeRound = (index: number) => {
@@ -100,12 +101,13 @@ const SubmitExperience = () => {
 
     try {
       // Create full text for search/embedding
-      const fullText = `${formData.company} ${formData.role} interview experience by ${formData.name}. ${rounds.map(r => `${r.type} round: ${r.questions}`).join(' ')}`;
+      const fullText = `${formData.company} ${formData.role} interview experience by ${formData.name}. ${rounds.map(r => `${r.type} round: Questions: ${r.questions} Answers: ${r.answers}`).join(' ')}`;
       
-      // Prepare rounds data
-      const roundsData = rounds.filter(r => r.type && r.questions).map(r => ({
+      // Prepare rounds data - filter out rounds with no type
+      const roundsData = rounds.filter(r => r.type).map(r => ({
         type: r.type,
-        questions: [r.questions], // Store as array to match interface
+        questions: [r.questions || ""], // Store as array to match interface
+        answers: [r.answers || ""], // Store answers as array too
         difficulty: r.difficulty || 'medium'
       }));
 
@@ -130,7 +132,7 @@ const SubmitExperience = () => {
 
       // Reset form
       setFormData({ name: "", company: "", role: "", date: "", outcome: "" });
-      setRounds([{ type: "", questions: "", difficulty: "" }]);
+      setRounds([{ type: "", questions: "", answers: "", difficulty: "" }]);
       
     } catch (error) {
       console.error('Error submitting experience:', error);
@@ -291,12 +293,21 @@ const SubmitExperience = () => {
                             </div>
                           </div>
                           <div>
-                            <Label>Questions & Experience</Label>
+                            <Label>Questions Asked (Optional)</Label>
                             <Textarea
                               value={round.questions}
                               onChange={(e) => updateRound(index, 'questions', e.target.value)}
-                              placeholder="Describe the questions asked, your approach, and any tips..."
-                              rows={4}
+                              placeholder="What questions were asked in this round?"
+                              rows={3}
+                            />
+                          </div>
+                          <div>
+                            <Label>Your Answers & Approach (Optional)</Label>
+                            <Textarea
+                              value={round.answers}
+                              onChange={(e) => updateRound(index, 'answers', e.target.value)}
+                              placeholder="How did you answer? What was your approach? Any tips..."
+                              rows={3}
                             />
                           </div>
                         </div>
