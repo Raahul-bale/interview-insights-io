@@ -35,27 +35,36 @@ const FilteredExperiences = ({ filters, sortBy = 'recent', limit }: FilteredExpe
   const fetchFilteredExperiences = async () => {
     try {
       setIsLoading(true);
+      console.log('Applied filters:', filters);
+      
       let query = supabase.from('interview_posts').select('*');
 
       // Apply filters
       if (filters.company) {
         query = query.eq('company', filters.company);
+        console.log('Filtering by company:', filters.company);
       }
       
       if (filters.role) {
         query = query.eq('role', filters.role);
+        console.log('Filtering by role:', filters.role);
       }
 
       if (filters.minRating && filters.minRating > 0) {
         query = query.gte('average_rating', filters.minRating);
+        console.log('Filtering by minimum rating:', filters.minRating);
       }
 
       if (filters.dateFrom) {
-        query = query.gte('date', filters.dateFrom.toISOString().split('T')[0]);
+        const fromDate = filters.dateFrom.toISOString().split('T')[0];
+        query = query.gte('date', fromDate);
+        console.log('Filtering from date:', fromDate);
       }
 
       if (filters.dateTo) {
-        query = query.lte('date', filters.dateTo.toISOString().split('T')[0]);
+        const toDate = filters.dateTo.toISOString().split('T')[0];
+        query = query.lte('date', toDate);
+        console.log('Filtering to date:', toDate);
       }
 
       // Apply sorting
@@ -79,11 +88,23 @@ const FilteredExperiences = ({ filters, sortBy = 'recent', limit }: FilteredExpe
 
       const { data, error } = await query;
       
-      if (error) throw error;
+      if (error) {
+        console.error('Query error:', error);
+        throw error;
+      }
 
-      // Filter by difficulty if specified (since difficulty is not stored in DB, we'll skip this for now)
+      console.log('Query result:', data);
+
+      // Client-side filtering for difficulty (since it's not stored in DB)
       let filteredData = data || [];
       
+      if (filters.difficulty) {
+        // Since difficulty is not stored in the database, we'll skip this filter
+        // In a real implementation, you might want to add a difficulty column to the database
+        console.log('Difficulty filter applied (client-side filtering not implemented)');
+      }
+      
+      console.log('Final filtered data:', filteredData);
       setExperiences(filteredData);
     } catch (error) {
       console.error('Error fetching filtered experiences:', error);
