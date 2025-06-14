@@ -3,6 +3,8 @@ import Header from "@/components/Header";
 import TopExperiences from "@/components/TopExperiences";
 import SearchExperiences from "@/components/SearchExperiences";
 import AllExperiences from "@/components/AllExperiences";
+import AdvancedFilters, { type FilterOptions } from "@/components/AdvancedFilters";
+import FilteredExperiences from "@/components/FilteredExperiences";
 import ExperienceCard from "@/components/ExperienceCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -48,6 +51,10 @@ const HomePage = () => {
   // Experiences state
   const [experiences, setExperiences] = useState<any[]>([]);
   const [experiencesLoading, setExperiencesLoading] = useState(true);
+  
+  // Filter state
+  const [filters, setFilters] = useState<FilterOptions>({});
+  const [sortBy, setSortBy] = useState<'rating' | 'recent' | 'upvotes'>('recent');
   
   // Auth form states
   const [isLoading, setIsLoading] = useState(false);
@@ -271,7 +278,7 @@ const HomePage = () => {
             </div>
             
             <Tabs defaultValue="top-experiences" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-8">
+              <TabsList className="grid w-full grid-cols-4 mb-8">
                 <TabsTrigger value="top-experiences" className="flex items-center gap-2">
                   <Award className="w-4 h-4" />
                   Top Rated
@@ -284,6 +291,10 @@ const HomePage = () => {
                   <Search className="w-4 h-4" />
                   Search
                 </TabsTrigger>
+                <TabsTrigger value="advanced" className="flex items-center gap-2">
+                  <PlusCircle className="w-4 h-4" />
+                  Advanced
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="top-experiences">
                 <TopExperiences />
@@ -293,6 +304,28 @@ const HomePage = () => {
               </TabsContent>
               <TabsContent value="search">
                 <SearchExperiences />
+              </TabsContent>
+              <TabsContent value="advanced" className="space-y-6">
+                <AdvancedFilters 
+                  onFiltersChange={setFilters}
+                />
+                <div className="flex items-center gap-4 mb-4">
+                  <span className="text-sm font-medium">Sort by:</span>
+                  <Select value={sortBy} onValueChange={(value: 'rating' | 'recent' | 'upvotes') => setSortBy(value)}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="recent">Most Recent</SelectItem>
+                      <SelectItem value="rating">Highest Rated</SelectItem>
+                      <SelectItem value="upvotes">Most Upvoted</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <FilteredExperiences 
+                  filters={filters}
+                  sortBy={sortBy}
+                />
               </TabsContent>
             </Tabs>
           </div>
@@ -382,7 +415,7 @@ const HomePage = () => {
           
           <div className="max-w-6xl mx-auto">
             <Tabs defaultValue="top-experiences" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-8">
+              <TabsList className="grid w-full grid-cols-4 mb-8">
                 <TabsTrigger value="top-experiences" className="flex items-center gap-2">
                   <Award className="w-4 h-4" />
                   Top Rated
@@ -395,6 +428,10 @@ const HomePage = () => {
                   <Search className="w-4 h-4" />
                   Search
                 </TabsTrigger>
+                <TabsTrigger value="advanced" className="flex items-center gap-2">
+                  <PlusCircle className="w-4 h-4" />
+                  Advanced
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="top-experiences">
                 <TopExperiences limit={5} />
@@ -404,6 +441,28 @@ const HomePage = () => {
               </TabsContent>
               <TabsContent value="search">
                 <SearchExperiences />
+              </TabsContent>
+              <TabsContent value="advanced" className="space-y-6">
+                <AdvancedFilters 
+                  onFiltersChange={setFilters}
+                />
+                <div className="flex items-center gap-4 mb-4">
+                  <span className="text-sm font-medium">Sort by:</span>
+                  <Select value={sortBy} onValueChange={(value: 'rating' | 'recent' | 'upvotes') => setSortBy(value)}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="recent">Most Recent</SelectItem>
+                      <SelectItem value="rating">Highest Rated</SelectItem>
+                      <SelectItem value="upvotes">Most Upvoted</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <FilteredExperiences 
+                  filters={filters}
+                  sortBy={sortBy}
+                />
               </TabsContent>
             </Tabs>
           </div>
