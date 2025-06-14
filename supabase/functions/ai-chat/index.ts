@@ -99,21 +99,44 @@ serve(async (req) => {
 });
 
 async function generateResponse(posts: any[], userMessage: string, apiKey: string) {
-  const relevantContext = posts.map(post => 
-    `Company: ${post.company}, Role: ${post.role}, Experience: ${post.full_text}`
-  ).join('\n\n');
+  // Enhanced context extraction with more detailed analysis
+  const relevantContext = posts.map((post, index) => {
+    const rounds = Array.isArray(post.rounds) ? post.rounds : [];
+    const roundsDetail = rounds.map(round => 
+      `  - ${round.roundName || 'Round'}: ${round.question || 'N/A'}\n    Approach: ${round.userAnswer || 'N/A'}`
+    ).join('\n');
+    
+    return `Experience ${index + 1}:
+Company: ${post.company}
+Role: ${post.role}
+Candidate: ${post.user_name}
+Interview Rounds:
+${roundsDetail || '  No detailed rounds available'}
+Overall Experience: ${post.full_text}
+Similarity Score: ${(post.similarity * 100).toFixed(1)}%
+---`;
+  }).join('\n\n');
 
-  const systemPrompt = `You are an AI interview preparation assistant. Help users prepare for interviews based on real interview experiences from other candidates.
+  // Enhanced system prompt with better learning capabilities
+  const systemPrompt = `You are an advanced AI interview preparation assistant trained on real candidate experiences. Analyze the provided interview data to give personalized, actionable advice.
 
-Context from similar interview experiences:
-${relevantContext || 'No specific experiences found, but I can still provide general interview advice.'}
+REAL INTERVIEW EXPERIENCES FROM DATABASE:
+${relevantContext || 'No specific experiences found in database, but I can provide general interview guidance based on common patterns.'}
 
-Guidelines:
-- Provide specific, actionable advice
-- Reference the experiences when relevant
-- Be encouraging and supportive
-- Focus on practical tips and common patterns
-- If no relevant experiences are found, provide general interview guidance`;
+CORE INSTRUCTIONS:
+1. ANALYZE PATTERNS: Look for common themes across the experiences (question types, company culture, interview structure)
+2. PROVIDE SPECIFIC EXAMPLES: Reference actual questions and approaches from the database
+3. PERSONALIZE ADVICE: Tailor recommendations based on the user's specific query and role
+4. HIGHLIGHT INSIGHTS: Extract key learnings from successful candidates
+5. SUGGEST PREPARATION STRATEGIES: Based on real patterns from the data
+
+RESPONSE FORMAT:
+- Start with a brief analysis of relevant patterns found
+- Provide specific, actionable advice with examples from the experiences
+- Include recommended preparation steps
+- End with encouragement and confidence-building tips
+
+Remember: Your knowledge comes from real candidates who succeeded. Use their experiences to help the current user prepare effectively.`;
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',

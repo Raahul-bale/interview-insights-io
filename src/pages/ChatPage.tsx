@@ -6,6 +6,23 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+
+// Define interface for source
+interface Source {
+  id: string;
+  company: string;
+  role: string;
+}
+
+// Define interface for message
+interface Message {
+  id: number;
+  message: string;
+  isUser: boolean;
+  timestamp: string;
+  sources?: Source[];
+}
 
 const ChatPage = () => {
   const { toast } = useToast();
@@ -116,12 +133,13 @@ const ChatPage = () => {
             <CardContent className="flex-1 flex flex-col p-0">
               {/* Messages Area */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((message) => (
+                {messages.map((message: Message) => (
                   <ChatMessage
                     key={message.id}
                     message={message.message}
                     isUser={message.isUser}
                     timestamp={message.timestamp}
+                    sources={message.sources}
                   />
                 ))}
                 
