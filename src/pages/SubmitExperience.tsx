@@ -74,6 +74,17 @@ const SubmitExperience = () => {
       return;
     }
 
+    // Validate rounds - at least one round must have all required fields
+    const validRounds = rounds.filter(r => r.type && r.questions.trim() && r.answers.trim() && r.experience.trim());
+    if (validRounds.length === 0) {
+      toast({
+        title: "Incomplete Round Information",
+        description: "Please fill in at least one complete round with questions, answers, and overall experience.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Check monthly submission limit
     const { data: canSubmit, error: limitError } = await supabase.rpc('check_monthly_submission_limit', {
       user_uuid: user.id
@@ -102,13 +113,13 @@ const SubmitExperience = () => {
 
     try {
       // Create full text for search/embedding
-      const fullText = `${formData.company} ${formData.role} interview experience by ${formData.name}. ${rounds.map(r => `${r.type} round: Questions: ${r.questions} Answers: ${r.answers} Experience: ${r.experience}`).join(' ')}`;
+      const fullText = `${formData.company} ${formData.role} interview experience by ${formData.name}. ${validRounds.map(r => `${r.type} round: Questions: ${r.questions} Answers: ${r.answers} Experience: ${r.experience}`).join(' ')}`;
       
-      // Prepare rounds data - filter out rounds with no type
-      const roundsData = rounds.filter(r => r.type).map(r => ({
+      // Prepare rounds data - use only valid rounds
+      const roundsData = validRounds.map(r => ({
         type: r.type,
-        questions: [r.questions || ""], // Store as array to match interface
-        answers: [r.answers || ""], // Store answers as array too
+        questions: [r.questions], // Store as array to match interface
+        answers: [r.answers], // Store answers as array too
         difficulty: r.difficulty || 'medium'
       }));
 
@@ -294,30 +305,33 @@ const SubmitExperience = () => {
                             </div>
                           </div>
                           <div>
-                            <Label>Questions Asked (Optional)</Label>
+                            <Label>Questions Asked *</Label>
                             <Textarea
                               value={round.questions}
                               onChange={(e) => updateRound(index, 'questions', e.target.value)}
                               placeholder="What questions were asked in this round?"
                               rows={3}
+                              required
                             />
                           </div>
                           <div>
-                            <Label>Your Answers & Approach (Optional)</Label>
+                            <Label>Your Answers & Approach *</Label>
                             <Textarea
                               value={round.answers}
                               onChange={(e) => updateRound(index, 'answers', e.target.value)}
                               placeholder="How did you answer? What was your approach? Any tips..."
                               rows={3}
+                              required
                             />
                           </div>
                           <div>
-                            <Label>Overall Experience & Additional Tips (Optional)</Label>
+                            <Label>Overall Experience & Additional Tips *</Label>
                             <Textarea
                               value={round.experience}
                               onChange={(e) => updateRound(index, 'experience', e.target.value)}
                               placeholder="Share your overall experience for this round, any additional tips, preparation advice, or insights that might help others..."
                               rows={3}
+                              required
                             />
                           </div>
                         </div>
