@@ -1,6 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, ThumbsUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Star, ThumbsUp, Edit } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 interface Round {
   type: string;
@@ -9,6 +12,8 @@ interface Round {
 }
 
 interface ExperienceCardProps {
+  id?: string;
+  userId?: string;
   name: string;
   company: string;
   role: string;
@@ -21,6 +26,8 @@ interface ExperienceCardProps {
 }
 
 const ExperienceCard = ({ 
+  id,
+  userId,
   name, 
   company, 
   role, 
@@ -31,6 +38,8 @@ const ExperienceCard = ({
   ratingCount = 0,
   upvoteCount = 0
 }: ExperienceCardProps) => {
+  const { user } = useAuth();
+  const canEdit = user && userId && user.id === userId;
   return (
     <Card className="hover:shadow-lg transition-shadow duration-300 border border-border">
       <CardHeader className="pb-3">
@@ -43,12 +52,21 @@ const ExperienceCard = ({
               By {name} • {date}
             </p>
           </div>
-          <Badge 
-            variant={outcome === "Selected" ? "default" : "secondary"}
-            className="ml-2"
-          >
-            {outcome}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {canEdit && id && (
+              <Link to={`/submit/${id}`}>
+                <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                  <Edit className="h-3 w-3" />
+                </Button>
+              </Link>
+            )}
+            <Badge 
+              variant={outcome === "Selected" ? "default" : "secondary"}
+              className="ml-2"
+            >
+              {outcome}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       

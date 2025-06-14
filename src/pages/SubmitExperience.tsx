@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +22,11 @@ interface Round {
 const SubmitExperience = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { id: experienceId } = useParams();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const isEditing = Boolean(experienceId);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -34,6 +39,75 @@ const SubmitExperience = () => {
   const [rounds, setRounds] = useState<Round[]>([
     { type: "", questions: "", answers: "", experience: "", difficulty: "" }
   ]);
+
+  // Load user profile and experience data if editing
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user) return;
+
+      setIsLoading(true);
+      try {
+        // Load user profile to auto-populate name
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profile?.full_name) {
+          setFormData(prev => ({ ...prev, name: profile.full_name }));
+        }
+
+        // If editing, load experience data
+        if (isEditing && experienceId) {
+          const { data: experience, error } = await supabase
+            .from('interview_posts')
+            .select('*')
+            .eq('id', experienceId)
+            .eq('user_id', user.id)
+            .single();
+
+          if (error) {
+            toast({
+              title: "Error",
+              description: "Experience not found or you don't have permission to edit it.",
+              variant: "destructive"
+            });
+            navigate('/');
+            return;
+          }
+
+          if (experience) {
+            setFormData({
+              name: experience.user_name,
+              company: experience.company,
+              role: experience.role,
+              date: experience.date,
+              outcome: ""
+            });
+
+            // Transform database rounds format to component format
+            const roundsArray = Array.isArray(experience.rounds) ? experience.rounds : [];
+            const transformedRounds = roundsArray.map((round: any) => ({
+              type: round.type,
+              questions: Array.isArray(round.questions) ? round.questions.join('\n') : round.questions,
+              answers: Array.isArray(round.answers) ? round.answers.join('\n') : round.answers,
+              experience: "", // This field wasn't stored separately before
+              difficulty: round.difficulty || 'medium'
+            }));
+
+            setRounds(transformedRounds);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user, isEditing, experienceId, navigate, toast]);
 
   const addRound = () => {
     setRounds([...rounds, { type: "", questions: "", answers: "", experience: "", difficulty: "" }]);
@@ -85,28 +159,30 @@ const SubmitExperience = () => {
       return;
     }
 
-    // Check monthly submission limit
-    const { data: canSubmit, error: limitError } = await supabase.rpc('check_monthly_submission_limit', {
-      user_uuid: user.id
-    });
-
-    if (limitError) {
-      console.error('Error checking submission limit:', limitError);
-      toast({
-        title: "Error",
-        description: "There was an error checking your submission limit.",
-        variant: "destructive"
+    // Check monthly submission limit (only for new submissions, not edits)
+    if (!isEditing) {
+      const { data: canSubmit, error: limitError } = await supabase.rpc('check_monthly_submission_limit', {
+        user_uuid: user.id
       });
-      return;
-    }
 
-    if (!canSubmit) {
-      toast({
-        title: "Monthly Limit Reached",
-        description: "You can only submit one experience per month. Please wait until next month to submit another experience.",
-        variant: "destructive"
-      });
-      return;
+      if (limitError) {
+        console.error('Error checking submission limit:', limitError);
+        toast({
+          title: "Error",
+          description: "There was an error checking your submission limit.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (!canSubmit) {
+        toast({
+          title: "Monthly Limit Reached",
+          description: "You can only submit one experience per month. Please wait until next month to submit another experience.",
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -123,28 +199,54 @@ const SubmitExperience = () => {
         difficulty: r.difficulty || 'medium'
       }));
 
-      const { error } = await supabase
-        .from('interview_posts')
-        .insert({
-          user_id: user.id,
-          user_name: formData.name,
-          company: formData.company,
-          role: formData.role,
-          date: formData.date || new Date().toISOString().split('T')[0],
-          rounds: roundsData,
-          full_text: fullText
+      if (isEditing && experienceId) {
+        // Update existing experience
+        const { error } = await supabase
+          .from('interview_posts')
+          .update({
+            user_name: formData.name,
+            company: formData.company,
+            role: formData.role,
+            date: formData.date || new Date().toISOString().split('T')[0],
+            rounds: roundsData,
+            full_text: fullText
+          })
+          .eq('id', experienceId)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Experience Updated!",
+          description: "Your interview experience has been updated successfully.",
         });
 
-      if (error) throw error;
+        navigate('/');
+      } else {
+        // Create new experience
+        const { error } = await supabase
+          .from('interview_posts')
+          .insert({
+            user_id: user.id,
+            user_name: formData.name,
+            company: formData.company,
+            role: formData.role,
+            date: formData.date || new Date().toISOString().split('T')[0],
+            rounds: roundsData,
+            full_text: fullText
+          });
 
-      toast({
-        title: "Experience Shared!",
-        description: "Thank you for sharing your interview experience. It will help other students prepare better!",
-      });
+        if (error) throw error;
 
-      // Reset form
-      setFormData({ name: "", company: "", role: "", date: "", outcome: "" });
-      setRounds([{ type: "", questions: "", answers: "", experience: "", difficulty: "" }]);
+        toast({
+          title: "Experience Shared!",
+          description: "Thank you for sharing your interview experience. It will help other students prepare better!",
+        });
+
+        // Reset form
+        setFormData({ name: "", company: "", role: "", date: "", outcome: "" });
+        setRounds([{ type: "", questions: "", answers: "", experience: "", difficulty: "" }]);
+      }
       
     } catch (error) {
       console.error('Error submitting experience:', error);
@@ -166,10 +268,10 @@ const SubmitExperience = () => {
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">
-              Share Your Interview Experience
+              {isEditing ? "Edit Your Interview Experience" : "Share Your Interview Experience"}
             </h1>
             <p className="text-muted-foreground">
-              Help fellow students by sharing your interview journey
+              {isEditing ? "Update your interview experience details" : "Help fellow students by sharing your interview journey"}
             </p>
           </div>
 
@@ -340,8 +442,8 @@ const SubmitExperience = () => {
                   ))}
                 </div>
 
-                <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                  {isSubmitting ? "Sharing..." : "Share Experience"}
+                <Button type="submit" className="w-full" size="lg" disabled={isSubmitting || isLoading}>
+                  {isSubmitting ? (isEditing ? "Updating..." : "Sharing...") : (isEditing ? "Update Experience" : "Share Experience")}
                 </Button>
               </form>
             </CardContent>
