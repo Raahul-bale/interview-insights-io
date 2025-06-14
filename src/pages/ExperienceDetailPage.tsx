@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Star, ThumbsUp, Calendar, User, Building2, Briefcase, Clock, ChevronRight } from "lucide-react";
+import { ArrowLeft, Star, ThumbsUp, Calendar, User, Building2, Briefcase, Clock, ChevronRight, Linkedin, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
@@ -25,6 +25,7 @@ interface Experience {
   company: string;
   role: string;
   user_name: string;
+  user_id: string;
   date: string;
   rounds: any; // Json type from Supabase
   full_text: string;
@@ -32,6 +33,7 @@ interface Experience {
   rating_count: number;
   upvote_count: number;
   created_at: string;
+  linkedin_url?: string;
 }
 
 const ExperienceDetailPage = () => {
@@ -53,13 +55,33 @@ const ExperienceDetailPage = () => {
         .single();
       
       if (error) throw error;
+      
+      // Fetch profile data separately
+      let linkedinUrl = null;
+      if (data.user_id) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('linkedin_url')
+          .eq('user_id', data.user_id)
+          .single();
+        
+        linkedinUrl = profileData?.linkedin_url;
+      }
+      
       console.log('Fetched experience data:', { 
         id: data.id, 
         average_rating: data.average_rating, 
         rating_count: data.rating_count,
-        upvote_count: data.upvote_count 
+        upvote_count: data.upvote_count,
+        linkedin_url: linkedinUrl
       });
-      setExperience(data);
+      
+      const experienceWithLinkedIn = {
+        ...data,
+        linkedin_url: linkedinUrl
+      };
+      
+      setExperience(experienceWithLinkedIn);
       
       // Fetch related experiences after getting the main experience
       await fetchRelatedExperiences(data);
@@ -225,6 +247,26 @@ const ExperienceDetailPage = () => {
                         <span>Shared {new Date(experience.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
+                    {experience.linkedin_url && (
+                      <div className="mt-2">
+                        <Button
+                          asChild
+                          size="sm"
+                          className="bg-[#0077B5] hover:bg-[#005885] text-white rounded-lg transition-colors"
+                        >
+                          <a
+                            href={experience.linkedin_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2"
+                          >
+                            <Linkedin className="h-4 w-4" />
+                            View LinkedIn Profile
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 lg:shrink-0">
                     <StarRating

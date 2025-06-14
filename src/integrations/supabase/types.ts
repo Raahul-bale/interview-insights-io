@@ -152,6 +152,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          linkedin_url: string | null
           updated_at: string | null
           user_id: string
         }
@@ -160,6 +161,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          linkedin_url?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -168,6 +170,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          linkedin_url?: string | null
           updated_at?: string | null
           user_id?: string
         }
