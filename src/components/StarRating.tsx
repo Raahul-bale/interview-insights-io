@@ -4,6 +4,12 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface StarRatingProps {
   experienceId: string;
@@ -74,11 +80,13 @@ const StarRating = ({
 
       if (error) throw error;
 
+      const isUpdate = userRating > 0;
       setUserRating(rating);
       console.log('Rating submitted successfully, calling onRatingUpdate');
+      
       toast({
-        title: "Rating Submitted",
-        description: "Thank you for your feedback!"
+        title: isUpdate ? "Rating Updated" : "Rating Submitted",
+        description: isUpdate ? "Your rating has been updated!" : "Thank you for your feedback!"
       });
 
       onRatingUpdate?.();
@@ -95,39 +103,55 @@ const StarRating = ({
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Button
-            key={star}
-            variant="ghost"
-            size="sm"
-            className="p-1 h-auto"
-            disabled={isSubmitting}
-            onMouseEnter={() => setHoveredRating(star)}
-            onMouseLeave={() => setHoveredRating(0)}
-            onClick={() => handleRating(star)}
-          >
-            <Star
-              className={`w-4 h-4 ${
-                star <= (hoveredRating || userRating || (user ? 0 : averageRating))
-                  ? "fill-yellow-400 text-yellow-400"
-                  : "text-muted-foreground"
-              }`}
-            />
-          </Button>
-        ))}
+    <TooltipProvider>
+      <div className="flex items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Button
+                  key={star}
+                  variant="ghost"
+                  size="sm"
+                  className="p-1 h-auto"
+                  disabled={isSubmitting}
+                  onMouseEnter={() => setHoveredRating(star)}
+                  onMouseLeave={() => setHoveredRating(0)}
+                  onClick={() => handleRating(star)}
+                >
+                  <Star
+                    className={`w-4 h-4 ${
+                      star <= (hoveredRating || userRating || (user ? 0 : averageRating))
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-muted-foreground"
+                    }`}
+                  />
+                </Button>
+              ))}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>
+              {user 
+                ? userRating > 0 
+                  ? "Click to update your rating" 
+                  : "Rate this experience (you can only rate once)"
+                : "Login to rate this experience"
+              }
+            </p>
+          </TooltipContent>
+        </Tooltip>
+        <div className="text-sm text-muted-foreground">
+          {averageRating > 0 ? (
+            <>
+              {averageRating.toFixed(1)} ({ratingCount} {ratingCount === 1 ? 'rating' : 'ratings'})
+            </>
+          ) : (
+            'No ratings yet'
+          )}
+        </div>
       </div>
-      <div className="text-sm text-muted-foreground">
-        {averageRating > 0 ? (
-          <>
-            {averageRating.toFixed(1)} ({ratingCount} {ratingCount === 1 ? 'rating' : 'ratings'})
-          </>
-        ) : (
-          'No ratings yet'
-        )}
-      </div>
-    </div>
+    </TooltipProvider>
   );
 };
 
