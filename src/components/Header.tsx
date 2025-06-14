@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, LogOut, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ThemeToggle } from "./ThemeToggle";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -106,6 +107,7 @@ const Header = () => {
           </nav>
 
           <div className="flex items-center space-x-3">
+            <ThemeToggle />
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
