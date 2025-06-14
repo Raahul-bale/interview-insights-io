@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Round {
   type: string;
@@ -16,6 +18,9 @@ interface Round {
 
 const SubmitExperience = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: "",
     company: "",
@@ -45,8 +50,17 @@ const SubmitExperience = () => {
     setRounds(updatedRounds);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to share your experience.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     // Basic validation
     if (!formData.name || !formData.company || !formData.role) {
@@ -58,15 +72,52 @@ const SubmitExperience = () => {
       return;
     }
 
-    // Simulate submission
-    toast({
-      title: "Experience Shared!",
-      description: "Thank you for sharing your interview experience. It will help other students prepare better!",
-    });
+    setIsSubmitting(true);
 
-    // Reset form
-    setFormData({ name: "", company: "", role: "", date: "", outcome: "" });
-    setRounds([{ type: "", questions: "", difficulty: "" }]);
+    try {
+      // Create full text for search/embedding
+      const fullText = `${formData.company} ${formData.role} interview experience by ${formData.name}. ${rounds.map(r => `${r.type} round: ${r.questions}`).join(' ')}`;
+      
+      // Prepare rounds data
+      const roundsData = rounds.filter(r => r.type && r.questions).map(r => ({
+        type: r.type,
+        questions: [r.questions], // Store as array to match interface
+        difficulty: r.difficulty || 'medium'
+      }));
+
+      const { error } = await supabase
+        .from('interview_posts')
+        .insert({
+          user_id: user.id,
+          user_name: formData.name,
+          company: formData.company,
+          role: formData.role,
+          date: formData.date || new Date().toISOString().split('T')[0],
+          rounds: roundsData,
+          full_text: fullText
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Experience Shared!",
+        description: "Thank you for sharing your interview experience. It will help other students prepare better!",
+      });
+
+      // Reset form
+      setFormData({ name: "", company: "", role: "", date: "", outcome: "" });
+      setRounds([{ type: "", questions: "", difficulty: "" }]);
+      
+    } catch (error) {
+      console.error('Error submitting experience:', error);
+      toast({
+        title: "Submission Failed",
+        description: "There was an error sharing your experience. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -230,8 +281,8 @@ const SubmitExperience = () => {
                   ))}
                 </div>
 
-                <Button type="submit" className="w-full" size="lg">
-                  Share Experience
+                <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                  {isSubmitting ? "Sharing..." : "Share Experience"}
                 </Button>
               </form>
             </CardContent>
