@@ -40,6 +40,11 @@ interface InterviewPost {
   upvote_count: number;
   created_at: string;
   user_id?: string;
+  profiles?: {
+    full_name: string | null;
+    avatar_url: string | null;
+    follower_count: number | null;
+  } | null;
 }
 
 const InterviewExperiencesPage = () => {
@@ -57,7 +62,7 @@ const InterviewExperiencesPage = () => {
     try {
       let query = supabase
         .from('interview_posts')
-        .select('*, profiles(full_name, avatar_url, follower_count)');
+        .select('*');
 
       if (searchTerm) {
         query = query.or(`company.ilike.%${searchTerm}%,role.ilike.%${searchTerm}%,full_text.ilike.%${searchTerm}%`);
@@ -79,7 +84,7 @@ const InterviewExperiencesPage = () => {
       const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
-      setExperiences(data || []);
+      setExperiences((data || []) as InterviewPost[]);
     } catch (error) {
       console.error('Error fetching experiences:', error);
       toast({
