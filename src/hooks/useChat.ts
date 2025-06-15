@@ -47,6 +47,44 @@ export const useChat = (experienceId?: string) => {
 
     try {
       setLoading(true);
+      
+      // Check if there's already a conversation for this experience
+      const { data: existingConv, error: checkError } = await supabase
+        .from('chat_conversations')
+        .select('*')
+        .eq('experience_id', experienceId)
+        .eq('requester_id', user.id)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') throw checkError;
+
+      // If conversation exists, handle based on status
+      if (existingConv) {
+        if (existingConv.status === 'pending') {
+          toast({
+            title: "Chat Request Already Sent",
+            description: "You already have a pending chat request with this user.",
+            variant: "destructive",
+          });
+          return null;
+        } else if (existingConv.status === 'accepted') {
+          toast({
+            title: "Chat Already Active",
+            description: "You already have an active chat with this user.",
+            variant: "destructive",
+          });
+          return null;
+        } else if (existingConv.status === 'declined') {
+          toast({
+            title: "Previous Request Declined",
+            description: "Your previous chat request was declined. You cannot send another request.",
+            variant: "destructive",
+          });
+          return null;
+        }
+      }
+
+      // Create new conversation
       const { data, error } = await supabase
         .from('chat_conversations')
         .insert({
@@ -68,19 +106,11 @@ export const useChat = (experienceId?: string) => {
       return data as ChatConversation;
     } catch (error: any) {
       console.error('Error creating conversation:', error);
-      if (error.code === '23505') {
-        toast({
-          title: "Chat Request Already Exists",
-          description: "You already have a chat request with this user.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to send chat request.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Error",
+        description: "Failed to send chat request.",
+        variant: "destructive",
+      });
       return null;
     } finally {
       setLoading(false);
