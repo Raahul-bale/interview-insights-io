@@ -10,9 +10,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useChat, ChatNotification } from '@/hooks/useChat';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 const ChatNotifications = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { 
     notifications, 
     fetchNotifications, 
@@ -62,12 +64,17 @@ const ChatNotifications = () => {
 
   const handleNotificationClick = async (notification: ChatNotification) => {
     await markNotificationAsRead(notification.id);
+    if (notification.type === 'new_message') {
+      setIsOpen(false);
+      navigate(`/chat/${notification.conversation_id}`);
+    }
   };
 
   const handleAcceptChat = async (conversationId: string, notificationId: string) => {
     await updateConversationStatus(conversationId, 'accepted');
     await markNotificationAsRead(notificationId);
     setIsOpen(false);
+    navigate(`/chat/${conversationId}`);
   };
 
   const handleDeclineChat = async (conversationId: string, notificationId: string) => {
@@ -97,12 +104,20 @@ const ChatNotifications = () => {
               </AvatarFallback>
             </Avatar>
             
-            <div className="flex-1 min-w-0">
+            <div 
+              className="flex-1 min-w-0 cursor-pointer"
+              onClick={() => !isNewChatRequest && handleNotificationClick(detail)}
+            >
               <div className="flex items-center gap-2 mb-1">
                 <p className="text-sm font-medium truncate">{senderName}</p>
                 {isNewChatRequest && (
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                     New Request
+                  </Badge>
+                )}
+                {!isNewChatRequest && (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    Click to Reply
                   </Badge>
                 )}
               </div>

@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import TermsPage from "./pages/TermsPage";
 import ResumeATSPage from "./pages/ResumeATSPage";
 import InterviewExperiencesPage from "./pages/InterviewExperiencesPage";
+import ChatConversationPage from "./pages/ChatConversationPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import TourOverlay from "./components/TourOverlay";
 
@@ -57,6 +58,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ChatPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/chat/:conversationId" 
+              element={
+                <ProtectedRoute>
+                  <ChatConversationPage />
                 </ProtectedRoute>
               } 
             />
