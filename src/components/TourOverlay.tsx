@@ -54,33 +54,35 @@ const TourOverlay = () => {
           transition: 'all 0.3s ease'
         });
 
-        // Calculate tooltip position
-        const tooltipWidth = 320;
-        const tooltipHeight = 200;
-        const placement = currentStepData.placement || 'bottom';
+        // Calculate tooltip position - beside each feature
+        const tooltipWidth = 300;
+        const tooltipHeight = 180;
+        const placement = currentStepData.placement || 'right';
+        const margin = 16; // Space between element and tooltip
         
         let top, left;
         
         switch (placement) {
           case 'top':
-            top = rect.top - tooltipHeight - 20;
+            top = rect.top - tooltipHeight - margin;
             left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
             break;
           case 'bottom':
-            top = rect.bottom + 20;
+            top = rect.bottom + margin;
             left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
             break;
           case 'left':
             top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
-            left = rect.left - tooltipWidth - 20;
+            left = rect.left - tooltipWidth - margin;
             break;
           case 'right':
             top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
-            left = rect.right + 20;
+            left = rect.right + margin;
             break;
           default:
-            top = rect.bottom + 20;
-            left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+            // Default to right side
+            top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+            left = rect.right + margin;
         }
 
         // Ensure tooltip stays within viewport
@@ -127,7 +129,7 @@ const TourOverlay = () => {
       <div style={overlayStyle} />
       
       {/* Tooltip */}
-      <Card style={tooltipStyle} className="shadow-lg border-2 border-primary">
+      <Card style={tooltipStyle} className="shadow-xl border-2 border-primary bg-card/95 backdrop-blur-sm">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-semibold">

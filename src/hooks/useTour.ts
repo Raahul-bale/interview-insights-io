@@ -15,7 +15,7 @@ const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="header-logo"]',
     title: 'Welcome to Interview Insights! 🎉',
     content: 'Your one-stop platform for interview preparation. Click here anytime to return to the homepage.',
-    placement: 'bottom',
+    placement: 'right',
     showNext: true,
     showSkip: true
   },
@@ -50,7 +50,7 @@ const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="theme-toggle"]',
     title: 'Theme Toggle 🌓',
     content: 'Switch between light and dark themes to match your preference and reduce eye strain.',
-    placement: 'bottom',
+    placement: 'left',
     showNext: true,
     showPrev: true,
     showSkip: true
@@ -59,7 +59,7 @@ const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="user-menu"]',
     title: 'User Menu 👤',
     content: 'Access your profile, settings, and logout options. Manage your account and preferences here.',
-    placement: 'bottom',
+    placement: 'left',
     showNext: true,
     showPrev: true,
     showSkip: true
@@ -68,7 +68,7 @@ const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="experience-tabs"]',
     title: 'Experience Categories 📊',
     content: 'Browse experiences by Top Rated (highest quality), All Experiences, Search specific companies/roles, or use Advanced filters.',
-    placement: 'top',
+    placement: 'bottom',
     showNext: true,
     showPrev: true,
     showSkip: true
@@ -77,7 +77,7 @@ const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="experience-card"]',
     title: 'Experience Cards 📋',
     content: 'Each card shows a real interview experience with company, role, rating, and key details. Click to read the full experience.',
-    placement: 'top',
+    placement: 'right',
     showNext: true,
     showPrev: true,
     showSkip: true
@@ -86,7 +86,7 @@ const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="upvote-button"]',
     title: 'Upvote System 👍',
     content: 'Upvote helpful experiences to help others find the most valuable content. Your upvotes improve the community.',
-    placement: 'top',
+    placement: 'right',
     showNext: true,
     showPrev: true,
     showSkip: true
@@ -95,7 +95,7 @@ const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="star-rating"]',
     title: 'Rating System ⭐',
     content: 'Rate experiences from 1-5 stars based on how helpful they were for your preparation.',
-    placement: 'top',
+    placement: 'right',
     showNext: true,
     showPrev: true,
     showSkip: true
@@ -113,7 +113,7 @@ const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="advanced-filters"]',
     title: 'Advanced Filters 🔧',
     content: 'Filter experiences by company, role, experience level, interview difficulty, and more for targeted preparation.',
-    placement: 'top',
+    placement: 'bottom',
     showNext: true,
     showPrev: true,
     showSkip: true
