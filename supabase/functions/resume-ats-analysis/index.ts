@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -39,6 +39,10 @@ serve(async (req) => {
 
     if (!resumeContent) {
       throw new Error('Resume content is required');
+    }
+
+    if (!anthropicApiKey) {
+      throw new Error('Anthropic API key is not configured');
     }
 
     // Create the analysis prompt
@@ -87,51 +91,56 @@ Please provide analysis specifically tailored to this job posting, focusing on h
 Please provide general ATS optimization advice since no specific job description was provided.`;
     }
 
-    console.log('Sending request to OpenAI for ATS analysis...');
+    console.log('Sending request to Anthropic Claude for ATS analysis...');
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'x-api-key': anthropicApiKey,
         'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.3,
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,
+        temperature: 0.3,
+        messages: [
+          {
+            role: 'user',
+            content: `${systemPrompt}\n\n${userPrompt}`
+          }
+        ]
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('OpenAI API error:', errorData);
+      console.error('Anthropic API error:', errorData);
       
       if (response.status === 429) {
-        throw new Error('OpenAI API quota exceeded. Please check your billing and usage limits.');
+        throw new Error('Anthropic API rate limit exceeded. Please try again in a moment.');
       } else if (response.status === 401) {
-        throw new Error('OpenAI API key is invalid. Please check your API key.');
+        throw new Error('Anthropic API key is invalid. Please check your API key.');
+      } else if (response.status === 400) {
+        throw new Error('Invalid request to Anthropic API. Please try again.');
       } else {
-        throw new Error(`OpenAI API error: ${response.status} - ${errorData}`);
+        throw new Error(`Anthropic API error: ${response.status} - ${errorData}`);
       }
     }
 
     const data = await response.json();
-    const analysisText = data.choices[0].message.content;
+    const analysisText = data.content[0].text;
 
-    console.log('Received analysis from OpenAI:', analysisText);
+    console.log('Received analysis from Anthropic Claude:', analysisText);
 
-    // Try to parse the JSON response from OpenAI
+    // Try to parse the JSON response from Claude
     let analysis: ATSAnalysisResponse;
     try {
       // Remove any markdown formatting if present
       const cleanedText = analysisText.replace(/```json\n?|\n?```/g, '').trim();
       analysis = JSON.parse(cleanedText);
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response as JSON:', parseError);
+      console.error('Failed to parse Claude response as JSON:', parseError);
       console.error('Raw response:', analysisText);
       
       // Fallback to structured analysis if JSON parsing fails
