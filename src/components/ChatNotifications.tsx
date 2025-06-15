@@ -82,6 +82,11 @@ const ChatNotifications = () => {
     await markNotificationAsRead(notificationId);
   };
 
+  const handleBlockUser = async (conversationId: string, notificationId: string) => {
+    await updateConversationStatus(conversationId, 'blocked');
+    await markNotificationAsRead(notificationId);
+  };
+
   const NotificationItem = ({ detail }: { detail: any }) => {
     const { profile } = useProfile(
       detail.type === 'chat_request' ? detail.conversation?.requester_id : detail.conversation?.experience_owner_id
@@ -137,7 +142,10 @@ const ChatNotifications = () => {
                 <div className="flex gap-2 mt-3">
                   <Button 
                     size="sm" 
-                    onClick={() => handleAcceptChat(detail.conversation_id, detail.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAcceptChat(detail.conversation_id, detail.id);
+                    }}
                     className="bg-green-600 hover:bg-green-700 text-white"
                   >
                     <Check className="h-3 w-3 mr-1" />
@@ -146,10 +154,23 @@ const ChatNotifications = () => {
                   <Button 
                     size="sm" 
                     variant="outline"
-                    onClick={() => handleDeclineChat(detail.conversation_id, detail.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeclineChat(detail.conversation_id, detail.id);
+                    }}
                   >
                     <X className="h-3 w-3 mr-1" />
                     Decline
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleBlockUser(detail.conversation_id, detail.id);
+                    }}
+                  >
+                    Block
                   </Button>
                 </div>
               )}

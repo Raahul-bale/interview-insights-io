@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { MessageCircle, Send, Check, X, User } from 'lucide-react';
+import { MessageCircle, Send, Check, X, User, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChat, ChatConversation, ChatMessage } from '@/hooks/useChat';
 import { useProfile } from '@/hooks/useProfile';
@@ -77,6 +77,12 @@ const ChatWidget = ({ experienceId, experienceOwnerId, experienceOwnerName }: Ch
     await loadConversation();
   };
 
+  const handleBlockUser = async () => {
+    if (!conversation) return;
+    await updateConversationStatus(conversation.id, 'blocked');
+    await loadConversation();
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!conversation || !newMessage.trim()) return;
@@ -96,12 +102,14 @@ const ChatWidget = ({ experienceId, experienceOwnerId, experienceOwnerName }: Ch
     switch (conversation.status) {
       case 'pending':
         return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Pending</Badge>;
-      case 'accepted':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>;
-      case 'declined':
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Declined</Badge>;
-      default:
-        return null;
+        case 'accepted':
+          return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>;
+        case 'declined':
+          return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Declined</Badge>;
+        case 'blocked':
+          return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Blocked</Badge>;
+        default:
+          return null;
     }
   };
 
@@ -151,6 +159,10 @@ const ChatWidget = ({ experienceId, experienceOwnerId, experienceOwnerName }: Ch
                 <X className="h-4 w-4 mr-2" />
                 Decline
               </Button>
+              <Button onClick={handleBlockUser} disabled={loading} variant="destructive" size="sm">
+                <Shield className="h-4 w-4 mr-2" />
+                Block
+              </Button>
             </div>
           </div>
         );
@@ -163,7 +175,19 @@ const ChatWidget = ({ experienceId, experienceOwnerId, experienceOwnerName }: Ch
           <MessageCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
           <h3 className="text-lg font-semibold mb-2">Chat Request Declined</h3>
           <p className="text-muted-foreground">
-            The chat request was declined.
+            The chat request was declined. You can send a new request if needed.
+          </p>
+        </div>
+      );
+    }
+
+    if (conversation.status === 'blocked') {
+      return (
+        <div className="text-center py-8">
+          <Shield className="mx-auto h-12 w-12 text-gray-500 mb-4" />
+          <h3 className="text-lg font-semibold mb-2">User Blocked</h3>
+          <p className="text-muted-foreground">
+            You are blocked from sending chat requests to this user.
           </p>
         </div>
       );

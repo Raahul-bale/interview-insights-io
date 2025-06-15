@@ -74,13 +74,31 @@ export const useChat = (experienceId?: string) => {
             variant: "destructive",
           });
           return null;
-        } else if (existingConv.status === 'declined') {
+        } else if (existingConv.status === 'blocked') {
           toast({
-            title: "Previous Request Declined",
-            description: "Your previous chat request was declined. You cannot send another request.",
+            title: "Request Blocked",
+            description: "You are blocked from sending chat requests to this user.",
             variant: "destructive",
           });
           return null;
+        }
+        // If declined, allow creating a new request (update existing to pending)
+        else if (existingConv.status === 'declined') {
+          const { data, error } = await supabase
+            .from('chat_conversations')
+            .update({ status: 'pending' })
+            .eq('id', existingConv.id)
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          toast({
+            title: "Chat Request Sent",
+            description: "Your chat request has been sent to the experience author.",
+          });
+
+          return data as ChatConversation;
         }
       }
 
@@ -117,8 +135,8 @@ export const useChat = (experienceId?: string) => {
     }
   };
 
-  // Update conversation status (accept/decline)
-  const updateConversationStatus = async (conversationId: string, status: 'accepted' | 'declined') => {
+  // Update conversation status (accept/decline/block)
+  const updateConversationStatus = async (conversationId: string, status: 'accepted' | 'declined' | 'blocked') => {
     if (!user) return;
 
     try {
@@ -131,9 +149,11 @@ export const useChat = (experienceId?: string) => {
       if (error) throw error;
 
       toast({
-        title: status === 'accepted' ? "Chat Request Accepted" : "Chat Request Declined",
+        title: status === 'accepted' ? "Chat Request Accepted" : status === 'blocked' ? "User Blocked" : "Chat Request Declined",
         description: status === 'accepted' 
           ? "You can now chat with this user." 
+          : status === 'blocked'
+          ? "User has been blocked from sending you chat requests."
           : "Chat request has been declined.",
       });
 
@@ -317,6 +337,55 @@ export const useChat = (experienceId?: string) => {
     };
   }, [user]);
 
+  // Get blocked users for an experience
+  const getBlockedUsers = async (experienceId: string) => {
+    if (!user) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('chat_conversations')
+        .select(`
+          *,
+          profiles!chat_conversations_requester_id_fkey(full_name, avatar_url)
+        `)
+        .eq('experience_id', experienceId)
+        .eq('experience_owner_id', user.id)
+        .eq('status', 'blocked');
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching blocked users:', error);
+      return [];
+    }
+  };
+
+  // Unblock a user
+  const unblockUser = async (conversationId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('chat_conversations')
+        .update({ status: 'declined' })
+        .eq('id', conversationId);
+
+      if (error) throw error;
+
+      toast({
+        title: "User Unblocked",
+        description: "User has been unblocked and can send chat requests again.",
+      });
+    } catch (error) {
+      console.error('Error unblocking user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to unblock user.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     conversations,
     messages,
@@ -329,6 +398,8 @@ export const useChat = (experienceId?: string) => {
     fetchMessages,
     fetchNotifications,
     markNotificationAsRead,
-    getCurrentConversation
+    getCurrentConversation,
+    getBlockedUsers,
+    unblockUser
   };
 };
