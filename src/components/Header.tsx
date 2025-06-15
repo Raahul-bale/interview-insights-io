@@ -11,7 +11,8 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut, Mail, Edit, BookOpen } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { User, LogOut, Mail, Edit, BookOpen, Menu } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "./ThemeToggle";
@@ -25,6 +26,7 @@ const Header = () => {
     full_name?: string;
     avatar_url?: string;
   }>({});
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Fetch user profile data
   useEffect(() => {
@@ -137,78 +139,198 @@ const Header = () => {
           </nav>
 
           <div className="flex items-center space-x-3">
-            <TourButton />
-            <div data-tour="theme-toggle">
-              <ThemeToggle />
-            </div>
-            <ChatNotifications />
-            {user ? (
-              <div data-tour="user-menu">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      {userProfile.avatar_url && (
-                        <AvatarImage src={userProfile.avatar_url} alt="Profile picture" />
-                      )}
-                      <AvatarFallback>
-                        {getUserInitials(user.email || '', userProfile.full_name)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <div className="flex items-center justify-start gap-2 p-2">
-                    <div className="flex flex-col space-y-1 leading-none">
-                      <p className="font-medium">{getDisplayName()}</p>
-                      {userProfile.full_name && (
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
-                      )}
-                    </div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile?tab=experiences" className="cursor-pointer">
-                      <Edit className="mr-2 h-4 w-4" />
-                      <span>My Experiences</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.location.href = 'mailto:baleraahul@gmail.com?subject=Query from Interview Experience App'}>
-                    <Mail className="mr-2 h-4 w-4" />
-                    <span>Contact Us</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Sign out</span>
-                  </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+            {/* Desktop navigation actions */}
+            <div className="hidden md:flex items-center space-x-3">
+              <TourButton />
+              <div data-tour="theme-toggle">
+                <ThemeToggle />
               </div>
-            ) : (
-              <>
-                <Link to="/auth">
-                  <Button variant="ghost" size="sm">
-                    Login
-                  </Button>
-                </Link>
-                <Link to="/auth">
-                  <Button size="sm">
-                    Sign Up
-                  </Button>
-                </Link>
-              </>
-            )}
+              <ChatNotifications />
+              {user ? (
+                <div data-tour="user-menu">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        {userProfile.avatar_url && (
+                          <AvatarImage src={userProfile.avatar_url} alt="Profile picture" />
+                        )}
+                        <AvatarFallback>
+                          {getUserInitials(user.email || '', userProfile.full_name)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <div className="flex items-center justify-start gap-2 p-2">
+                      <div className="flex flex-col space-y-1 leading-none">
+                        <p className="font-medium">{getDisplayName()}</p>
+                        {userProfile.full_name && (
+                          <p className="text-xs text-muted-foreground">{user.email}</p>
+                        )}
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="cursor-pointer">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile?tab=experiences" className="cursor-pointer">
+                        <Edit className="mr-2 h-4 w-4" />
+                        <span>My Experiences</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => window.location.href = 'mailto:baleraahul@gmail.com?subject=Query from Interview Experience App'}>
+                      <Mail className="mr-2 h-4 w-4" />
+                      <span>Contact Us</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Sign out</span>
+                    </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ) : (
+                <>
+                  <Link to="/auth">
+                    <Button variant="ghost" size="sm">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/auth">
+                    <Button size="sm">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Mobile menu */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Toggle menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <nav className="flex flex-col space-y-4">
+                  <Link 
+                    to="/" 
+                    className="text-lg font-medium hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Home
+                  </Link>
+                  <Link 
+                    to="/interview-experiences" 
+                    className="text-lg font-medium hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Experiences
+                  </Link>
+                  {user && (
+                    <>
+                      <Link 
+                        to="/submit" 
+                        className="text-lg font-medium hover:text-primary transition-colors"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Share Experience
+                      </Link>
+                      <Link 
+                        to="/chat" 
+                        className="text-lg font-medium hover:text-primary transition-colors"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        AI Prep Chat
+                      </Link>
+                      <Link 
+                        to="/resume-ats" 
+                        className="text-lg font-medium hover:text-primary transition-colors"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Resume ATS
+                      </Link>
+                      <Link 
+                        to="/conversations" 
+                        className="text-lg font-medium hover:text-primary transition-colors"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        My Chats
+                      </Link>
+                      <div className="border-t pt-4 space-y-4">
+                        <Link 
+                          to="/profile" 
+                          className="flex items-center text-lg font-medium hover:text-primary transition-colors"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <User className="mr-3 h-5 w-5" />
+                          Profile
+                        </Link>
+                        <Link 
+                          to="/profile?tab=experiences" 
+                          className="flex items-center text-lg font-medium hover:text-primary transition-colors"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <Edit className="mr-3 h-5 w-5" />
+                          My Experiences
+                        </Link>
+                        <button 
+                          onClick={() => {
+                            window.location.href = 'mailto:baleraahul@gmail.com?subject=Query from Interview Experience App';
+                            setMobileMenuOpen(false);
+                          }}
+                          className="flex items-center text-lg font-medium hover:text-primary transition-colors w-full text-left"
+                        >
+                          <Mail className="mr-3 h-5 w-5" />
+                          Contact Us
+                        </button>
+                        <button 
+                          onClick={() => {
+                            handleSignOut();
+                            setMobileMenuOpen(false);
+                          }}
+                          className="flex items-center text-lg font-medium hover:text-primary transition-colors w-full text-left"
+                        >
+                          <LogOut className="mr-3 h-5 w-5" />
+                          Sign out
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  {!user && (
+                    <div className="border-t pt-4 space-y-3">
+                      <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start text-lg">
+                          Login
+                        </Button>
+                      </Link>
+                      <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
+                        <Button className="w-full text-lg">
+                          Sign Up
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                  <div className="border-t pt-4 flex justify-center space-x-4">
+                    <TourButton />
+                    <ThemeToggle />
+                    <ChatNotifications />
+                  </div>
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
     </>
   );
 };
