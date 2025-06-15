@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,52 +7,18 @@ import { MessageCircle, Send, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-interface Comment {
-  id: string;
-  user_id: string;
-  user_name: string;
-  comment: string;
-  created_at: string;
-}
+import { useRealTimeComments } from "@/hooks/useRealTimeComments";
 
 interface CommentsSectionProps {
   experienceId: string;
 }
 
 const CommentsSection = ({ experienceId }: CommentsSectionProps) => {
-  const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
-
-  const fetchComments = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('experience_comments')
-        .select('*')
-        .eq('experience_id', experienceId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setComments(data || []);
-    } catch (error) {
-      console.error('Error fetching comments:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load comments",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchComments();
-  }, [experienceId]);
+  const { comments, isLoading: loading } = useRealTimeComments(experienceId);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,7 +47,6 @@ const CommentsSection = ({ experienceId }: CommentsSectionProps) => {
       if (error) throw error;
 
       setNewComment("");
-      await fetchComments();
       toast({
         title: "Success",
         description: "Comment added successfully",
@@ -108,7 +73,6 @@ const CommentsSection = ({ experienceId }: CommentsSectionProps) => {
 
       if (error) throw error;
 
-      await fetchComments();
       toast({
         title: "Success",
         description: "Comment deleted successfully",

@@ -192,7 +192,6 @@ const FilteredExperiences = ({ filters, sortBy = 'recent', limit }: FilteredExpe
                   experienceId={experience.id}
                   averageRating={experience.average_rating}
                   ratingCount={experience.rating_count}
-                  onRatingUpdate={fetchFilteredExperiences}
                 />
               </div>
             </CardHeader>
@@ -212,7 +211,6 @@ const FilteredExperiences = ({ filters, sortBy = 'recent', limit }: FilteredExpe
                   <UpvoteButton
                     experienceId={experience.id}
                     upvoteCount={experience.upvote_count}
-                    onUpvoteUpdate={fetchFilteredExperiences}
                   />
                 </div>
               </div>

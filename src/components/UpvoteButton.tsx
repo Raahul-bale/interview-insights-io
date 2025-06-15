@@ -1,47 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ThumbsUp } from "lucide-react";
+import { useRealTimeUpvote } from "@/hooks/useRealTimeUpvote";
 
 interface UpvoteButtonProps {
   experienceId: string;
   upvoteCount?: number;
-  onUpvoteUpdate?: () => void;
 }
 
 const UpvoteButton = ({ 
   experienceId, 
-  upvoteCount = 0,
-  onUpvoteUpdate 
+  upvoteCount: propUpvoteCount = 0
 }: UpvoteButtonProps) => {
-  const [hasUpvoted, setHasUpvoted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { hasUpvoted, upvoteCount } = useRealTimeUpvote(experienceId);
 
-  useEffect(() => {
-    const fetchUserUpvote = async () => {
-      if (!user) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('experience_upvotes')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('experience_id', experienceId)
-          .maybeSingle();
-
-        if (error) throw error;
-        setHasUpvoted(!!data);
-      } catch (error) {
-        console.error('Error fetching user upvote:', error);
-      }
-    };
-
-    fetchUserUpvote();
-  }, [user, experienceId]);
+  // Use real-time count if available, otherwise fallback to prop
+  const displayCount = upvoteCount !== undefined ? upvoteCount : propUpvoteCount;
 
   const handleUpvote = async () => {
     if (!user) {
@@ -64,7 +44,6 @@ const UpvoteButton = ({
           .eq('experience_id', experienceId);
 
         if (error) throw error;
-        setHasUpvoted(false);
       } else {
         // Add upvote
         const { error } = await supabase
@@ -75,11 +54,7 @@ const UpvoteButton = ({
           });
 
         if (error) throw error;
-        setHasUpvoted(true);
       }
-
-      console.log('Upvote action completed, calling onUpvoteUpdate');
-      onUpvoteUpdate?.();
     } catch (error) {
       console.error('Error updating upvote:', error);
       toast({
@@ -101,7 +76,7 @@ const UpvoteButton = ({
       disabled={isSubmitting}
     >
       <ThumbsUp className={`w-4 h-4 ${hasUpvoted ? 'fill-current' : ''}`} />
-      <span className="text-sm">{upvoteCount}</span>
+      <span className="text-sm">{displayCount}</span>
     </Button>
   );
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -10,51 +10,31 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useRealTimeRating } from "@/hooks/useRealTimeRating";
 
 interface StarRatingProps {
   experienceId: string;
   currentRating?: number;
   averageRating?: number;
   ratingCount?: number;
-  onRatingUpdate?: () => void;
 }
 
 const StarRating = ({ 
   experienceId, 
   currentRating = 0, 
-  averageRating = 0, 
-  ratingCount = 0,
-  onRatingUpdate 
+  averageRating: propAverageRating = 0, 
+  ratingCount: propRatingCount = 0
 }: StarRatingProps) => {
   const [hoveredRating, setHoveredRating] = useState(0);
-  const [userRating, setUserRating] = useState(currentRating);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { userRating, averageRating, ratingCount } = useRealTimeRating(experienceId);
 
-  useEffect(() => {
-    const fetchUserRating = async () => {
-      if (!user) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('experience_ratings')
-          .select('rating')
-          .eq('user_id', user.id)
-          .eq('experience_id', experienceId)
-          .maybeSingle();
-
-        if (error) throw error;
-        if (data) {
-          setUserRating(data.rating);
-        }
-      } catch (error) {
-        console.error('Error fetching user rating:', error);
-      }
-    };
-
-    fetchUserRating();
-  }, [user, experienceId]);
+  // Use real-time data if available, otherwise fallback to props
+  const displayAverageRating = averageRating !== undefined ? averageRating : propAverageRating;
+  const displayRatingCount = ratingCount !== undefined ? ratingCount : propRatingCount;
+  const displayUserRating = userRating !== undefined ? userRating : currentRating;
 
   const handleRating = async (rating: number) => {
     if (!user) {
@@ -80,16 +60,12 @@ const StarRating = ({
 
       if (error) throw error;
 
-      const isUpdate = userRating > 0;
-      setUserRating(rating);
-      console.log('Rating submitted successfully, calling onRatingUpdate');
+      const isUpdate = displayUserRating > 0;
       
       toast({
         title: isUpdate ? "Rating Updated" : "Rating Submitted",
         description: isUpdate ? "Your rating has been updated!" : "Thank you for your feedback!"
       });
-
-      onRatingUpdate?.();
     } catch (error) {
       console.error('Error submitting rating:', error);
       toast({
@@ -121,7 +97,7 @@ const StarRating = ({
                 >
                   <Star
                     className={`w-4 h-4 ${
-                      star <= (hoveredRating || userRating || (user ? 0 : averageRating))
+                      star <= (hoveredRating || displayUserRating || (user ? 0 : displayAverageRating))
                         ? "fill-yellow-400 text-yellow-400"
                         : "text-muted-foreground"
                     }`}
@@ -133,7 +109,7 @@ const StarRating = ({
           <TooltipContent>
             <p>
               {user 
-                ? userRating > 0 
+                ? displayUserRating > 0 
                   ? "Click to update your rating" 
                   : "Rate this experience (you can only rate once)"
                 : "Login to rate this experience"
@@ -142,9 +118,9 @@ const StarRating = ({
           </TooltipContent>
         </Tooltip>
         <div className="text-sm text-muted-foreground">
-          {averageRating > 0 ? (
+          {displayAverageRating > 0 ? (
             <>
-              {averageRating.toFixed(1)} ({ratingCount} {ratingCount === 1 ? 'rating' : 'ratings'})
+              {displayAverageRating.toFixed(1)} ({displayRatingCount} {displayRatingCount === 1 ? 'rating' : 'ratings'})
             </>
           ) : (
             'No ratings yet'

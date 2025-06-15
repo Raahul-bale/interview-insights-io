@@ -1,56 +1,23 @@
-import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import StarRating from "./StarRating";
 import UpvoteButton from "./UpvoteButton";
-
-interface TopExperience {
-  id: string;
-  company: string;
-  role: string;
-  user_name: string;
-  date: string;
-  rounds: any;
-  average_rating: number;
-  rating_count: number;
-  upvote_count: number;
-  created_at: string;
-}
+import { useRealTimeExperiences } from "@/hooks/useRealTimeExperiences";
 
 interface TopExperiencesProps {
   limit?: number;
 }
 
 const TopExperiences = ({ limit = 5 }: TopExperiencesProps) => {
-  const [topExperiences, setTopExperiences] = useState<TopExperience[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-
-  const fetchTopExperiences = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('interview_posts')
-        .select('*')
-        .gt('rating_count', 0)
-        .order('average_rating', { ascending: false })
-        .order('rating_count', { ascending: false })
-        .limit(limit);
-
-      if (error) throw error;
-      setTopExperiences(data || []);
-    } catch (error) {
-      console.error('Error fetching top experiences:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTopExperiences();
-  }, [limit]);
+  const { experiences: topExperiences, isLoading } = useRealTimeExperiences({
+    limit,
+    orderBy: 'average_rating',
+    ascending: false,
+    filters: { hasRatings: true }
+  });
 
   if (isLoading) {
     return (
@@ -132,7 +99,6 @@ const TopExperiences = ({ limit = 5 }: TopExperiencesProps) => {
                   experienceId={experience.id}
                   averageRating={experience.average_rating}
                   ratingCount={experience.rating_count}
-                  onRatingUpdate={fetchTopExperiences}
                 />
               </div>
             </CardHeader>
@@ -149,7 +115,6 @@ const TopExperiences = ({ limit = 5 }: TopExperiencesProps) => {
                   <UpvoteButton
                     experienceId={experience.id}
                     upvoteCount={experience.upvote_count}
-                    onUpvoteUpdate={fetchTopExperiences}
                   />
                 </div>
               </div>

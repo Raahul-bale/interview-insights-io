@@ -1,59 +1,22 @@
-import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Clock } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import StarRating from "./StarRating";
 import UpvoteButton from "./UpvoteButton";
-
-interface Experience {
-  id: string;
-  company: string;
-  role: string;
-  user_name: string;
-  date: string;
-  rounds: any;
-  average_rating: number;
-  rating_count: number;
-  upvote_count: number;
-  created_at: string;
-}
+import { useRealTimeExperiences } from "@/hooks/useRealTimeExperiences";
 
 interface AllExperiencesProps {
   limit?: number;
 }
 
 const AllExperiences = ({ limit }: AllExperiencesProps) => {
-  const [experiences, setExperiences] = useState<Experience[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-
-  const fetchAllExperiences = async () => {
-    try {
-      let query = supabase
-        .from('interview_posts')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (limit) {
-        query = query.limit(limit);
-      }
-
-      const { data, error } = await query;
-      
-      if (error) throw error;
-      setExperiences(data || []);
-    } catch (error) {
-      console.error('Error fetching all experiences:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAllExperiences();
-  }, [limit]);
+  const { experiences, isLoading } = useRealTimeExperiences({
+    limit,
+    orderBy: 'created_at',
+    ascending: false
+  });
 
   if (isLoading) {
     return (
@@ -140,7 +103,6 @@ const AllExperiences = ({ limit }: AllExperiencesProps) => {
                   experienceId={experience.id}
                   averageRating={experience.average_rating}
                   ratingCount={experience.rating_count}
-                  onRatingUpdate={fetchAllExperiences}
                 />
               </div>
             </CardHeader>
@@ -160,7 +122,6 @@ const AllExperiences = ({ limit }: AllExperiencesProps) => {
                   <UpvoteButton
                     experienceId={experience.id}
                     upvoteCount={experience.upvote_count}
-                    onUpvoteUpdate={fetchAllExperiences}
                   />
                 </div>
               </div>

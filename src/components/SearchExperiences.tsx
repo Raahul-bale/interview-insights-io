@@ -106,7 +106,6 @@ const SearchExperiences = () => {
                     experienceId={experience.id}
                     averageRating={experience.average_rating}
                     ratingCount={experience.rating_count}
-                    onRatingUpdate={handleSearch}
                   />
                 </div>
               </CardHeader>
@@ -126,7 +125,6 @@ const SearchExperiences = () => {
                     <UpvoteButton
                       experienceId={experience.id}
                       upvoteCount={experience.upvote_count}
-                      onUpvoteUpdate={handleSearch}
                     />
                   </div>
                 </div>

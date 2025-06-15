@@ -273,12 +273,10 @@ const ExperienceDetailPage = () => {
                       experienceId={experience.id}
                       averageRating={experience.average_rating}
                       ratingCount={experience.rating_count}
-                      onRatingUpdate={refreshExperience}
                     />
                     <UpvoteButton
                       experienceId={experience.id}
                       upvoteCount={experience.upvote_count}
-                      onUpvoteUpdate={refreshExperience}
                     />
                   </div>
                 </div>
