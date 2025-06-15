@@ -26,31 +26,24 @@ import {
 import InterviewExperienceCard from "@/components/InterviewExperienceCard";
 import SubmitExperienceForm from "@/components/SubmitExperienceForm";
 
-interface InterviewExperience {
+interface InterviewPost {
   id: string;
-  company_name: string;
-  position: string;
-  interview_type: string;
-  experience_level: string;
-  overall_rating: number;
-  difficulty_rating: number;
-  title: string;
-  description: string;
-  interview_process?: string;
-  questions_asked?: string;
-  tips?: string;
-  outcome?: string;
-  interview_date?: string;
-  created_at: string;
-  author_name: string;
-  author_avatar?: string;
+  company: string;
+  role: string;
+  user_name: string;
+  date: string;
+  rounds: any;
+  full_text: string;
+  average_rating: number | null;
+  rating_count: number | null;
   upvote_count: number;
+  created_at: string;
 }
 
 const InterviewExperiencesPage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [experiences, setExperiences] = useState<InterviewExperience[]>([]);
+  const [experiences, setExperiences] = useState<InterviewPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCompany, setFilterCompany] = useState("all");
@@ -61,24 +54,25 @@ const InterviewExperiencesPage = () => {
   const fetchExperiences = async () => {
     try {
       let query = supabase
-        .from('interview_experiences_with_details')
+        .from('interview_posts')
         .select('*');
 
       if (searchTerm) {
-        query = query.or(`company_name.ilike.%${searchTerm}%,position.ilike.%${searchTerm}%,title.ilike.%${searchTerm}%`);
+        query = query.or(`company.ilike.%${searchTerm}%,role.ilike.%${searchTerm}%,full_text.ilike.%${searchTerm}%`);
       }
 
       if (filterCompany && filterCompany !== "all") {
-        query = query.eq('company_name', filterCompany);
+        query = query.eq('company', filterCompany);
       }
 
-      if (filterType && filterType !== "all") {
-        query = query.eq('interview_type', filterType);
-      }
+      // Remove filters that don't exist on interview_posts table
+      // if (filterType && filterType !== "all") {
+      //   query = query.eq('interview_type', filterType);
+      // }
 
-      if (filterLevel && filterLevel !== "all") {
-        query = query.eq('experience_level', filterLevel);
-      }
+      // if (filterLevel && filterLevel !== "all") {
+      //   query = query.eq('experience_level', filterLevel);
+      // }
 
       const { data, error } = await query.order('created_at', { ascending: false });
 
@@ -110,7 +104,7 @@ const InterviewExperiencesPage = () => {
   };
 
   // Get unique companies for filter
-  const companies = [...new Set(experiences.map(exp => exp.company_name))].sort();
+  const companies = [...new Set(experiences.map(exp => exp.company))].sort();
 
   const interviewTypes = ['coding', 'behavioral', 'system design', 'technical', 'phone screening', 'onsite'];
   const experienceLevels = ['entry', 'mid', 'senior', 'lead', 'principal'];
@@ -245,7 +239,7 @@ const InterviewExperiencesPage = () => {
                   <div>
                     <p className="text-2xl font-bold">
                       {experiences.length > 0 
-                        ? (experiences.reduce((sum, exp) => sum + exp.overall_rating, 0) / experiences.length).toFixed(1)
+                        ? (experiences.reduce((sum, exp) => sum + (exp.average_rating || 0), 0) / experiences.length).toFixed(1)
                         : '0.0'
                       }
                     </p>
@@ -274,11 +268,51 @@ const InterviewExperiencesPage = () => {
           ) : experiences.length > 0 ? (
             <div className="grid gap-6">
               {experiences.map(experience => (
-                <InterviewExperienceCard
-                  key={experience.id}
-                  experience={experience}
-                  onUpdate={fetchExperiences}
-                />
+                <Card key={experience.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold mb-2">
+                          {experience.company} - {experience.role}
+                        </h3>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                          <span className="flex items-center gap-1">
+                            <User className="h-4 w-4" />
+                            {experience.user_name}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {new Date(experience.date).toLocaleDateString()}
+                          </span>
+                          {experience.average_rating && (
+                            <span className="flex items-center gap-1">
+                              <Star className="h-4 w-4 text-yellow-500" />
+                              {experience.average_rating.toFixed(1)} ({experience.rating_count} ratings)
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-muted-foreground mb-4">
+                          {experience.full_text}
+                        </p>
+                        {experience.rounds && Array.isArray(experience.rounds) && experience.rounds.length > 0 && (
+                          <div className="flex gap-2 mb-4">
+                            {experience.rounds.map((round: any, index: number) => (
+                              <Badge key={index} variant="outline">
+                                {round.type || 'Round'} - {round.difficulty || 'N/A'}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm">
+                          <ThumbsUp className="h-4 w-4 mr-1" />
+                          {experience.upvote_count}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           ) : (
