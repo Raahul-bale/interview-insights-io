@@ -78,6 +78,11 @@ const InterviewExperienceCard = ({ experience, onUpdate }: Props) => {
         title: "Login Required",
         description: "Please login to upvote experiences.",
         variant: "destructive",
+        action: (
+          <Button variant="outline" size="sm" asChild>
+            <a href="/auth">Login</a>
+          </Button>
+        )
       });
       return;
     }

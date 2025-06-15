@@ -305,7 +305,26 @@ const InterviewExperiencesPage = () => {
                         )}
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            if (!user) {
+                              toast({
+                                title: "Login Required",
+                                description: "Please login to upvote experiences.",
+                                variant: "destructive",
+                                action: (
+                                  <Button variant="outline" size="sm" asChild>
+                                    <a href="/auth">Login</a>
+                                  </Button>
+                                )
+                              });
+                              return;
+                            }
+                            // Handle upvote logic here if needed
+                          }}
+                        >
                           <ThumbsUp className="h-4 w-4 mr-1" />
                           {experience.upvote_count}
                         </Button>
