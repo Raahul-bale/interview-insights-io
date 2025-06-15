@@ -107,32 +107,6 @@ export const useFollow = (targetUserId: string) => {
     fetchFollowerCount();
   }, [user, targetUserId]);
 
-  // Set up real-time subscription for follower count
-  useEffect(() => {
-    if (!targetUserId) return;
-
-    const channel = supabase
-      .channel(`profile-follower-count-${targetUserId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `user_id=eq.${targetUserId}`
-        },
-        (payload) => {
-          if (payload.new.follower_count !== undefined) {
-            setFollowerCount(payload.new.follower_count);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [targetUserId]);
 
   return {
     isFollowing,
