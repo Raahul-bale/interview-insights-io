@@ -9,32 +9,48 @@ import { useChat } from '@/hooks/useChat';
 import { useProfile } from '@/hooks/useProfile';
 
 interface BlockedUsersProps {
-  experienceId: string;
-  experienceTitle: string;
+  experiences: Array<{
+    id: string;
+    company: string;
+    role: string;
+  }>;
 }
 
-const BlockedUsers = ({ experienceId, experienceTitle }: BlockedUsersProps) => {
+const BlockedUsers = ({ experiences }: BlockedUsersProps) => {
   const { user } = useAuth();
   const { getBlockedUsers, unblockUser } = useChat();
   const [blockedUsers, setBlockedUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    loadBlockedUsers();
-  }, [experienceId]);
+    loadAllBlockedUsers();
+  }, [experiences]);
 
-  const loadBlockedUsers = async () => {
-    if (!experienceId) return;
+  const loadAllBlockedUsers = async () => {
+    if (!experiences.length) return;
     
     setLoading(true);
-    const blocked = await getBlockedUsers(experienceId);
-    setBlockedUsers(blocked);
-    setLoading(false);
+    try {
+      const allBlockedUsers = [];
+      for (const experience of experiences) {
+        const blocked = await getBlockedUsers(experience.id);
+        const blockedWithExperience = blocked.map((user: any) => ({
+          ...user,
+          experienceTitle: `${experience.company} - ${experience.role}`
+        }));
+        allBlockedUsers.push(...blockedWithExperience);
+      }
+      setBlockedUsers(allBlockedUsers);
+    } catch (error) {
+      console.error('Error loading blocked users:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUnblock = async (conversationId: string) => {
     await unblockUser(conversationId);
-    loadBlockedUsers(); // Refresh the list
+    loadAllBlockedUsers(); // Refresh the list
   };
 
   const BlockedUserItem = ({ blockedUser }: { blockedUser: any }) => {
@@ -54,10 +70,13 @@ const BlockedUsers = ({ experienceId, experienceTitle }: BlockedUsersProps) => {
               
               <div>
                 <h4 className="font-semibold">{profile?.full_name || 'Unknown User'}</h4>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                   <Clock className="h-3 w-3" />
                   Blocked on {new Date(blockedUser.updated_at).toLocaleDateString()}
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Blocked from: <strong>{blockedUser.experienceTitle}</strong>
+                </p>
               </div>
             </div>
 
@@ -92,7 +111,7 @@ const BlockedUsers = ({ experienceId, experienceTitle }: BlockedUsersProps) => {
       </div>
       
       <p className="text-sm text-muted-foreground">
-        Users blocked from sending chat requests for: <strong>{experienceTitle}</strong>
+        Manage users blocked from sending chat requests to your experiences
       </p>
 
       {blockedUsers.length > 0 ? (
@@ -105,7 +124,7 @@ const BlockedUsers = ({ experienceId, experienceTitle }: BlockedUsersProps) => {
         <Card>
           <CardContent className="p-6 text-center">
             <Shield className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-            <p className="text-muted-foreground">No blocked users for this experience</p>
+            <p className="text-muted-foreground">No blocked users</p>
           </CardContent>
         </Card>
       )}

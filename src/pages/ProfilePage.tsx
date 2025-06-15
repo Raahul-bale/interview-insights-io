@@ -613,13 +613,13 @@ const ProfilePage = () => {
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {userExperiences.map((experience) => (
-                      <BlockedUsers
-                        key={experience.id}
-                        experienceId={experience.id}
-                        experienceTitle={`${experience.company} - ${experience.role}`}
-                      />
-                    ))}
+                    <BlockedUsers
+                      experiences={userExperiences.map(exp => ({
+                        id: exp.id,
+                        company: exp.company,
+                        role: exp.role
+                      }))}
+                    />
                   </CardContent>
                 </Card>
               )}
