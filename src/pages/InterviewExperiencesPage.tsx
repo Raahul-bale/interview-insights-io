@@ -110,7 +110,7 @@ const InterviewExperiencesPage = () => {
   const experienceLevels = ['entry', 'mid', 'senior', 'lead', 'principal'];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <SEO 
         title="Interview Experiences - Interview Insights"
         description="Share and discover real interview experiences from top tech companies. Get insights into coding rounds, behavioral interviews, and more."
@@ -118,19 +118,21 @@ const InterviewExperiencesPage = () => {
       />
       <Header />
       
-      <main className="py-20">
+      <main className="py-24">
         <div className="container mx-auto px-4 max-w-7xl">
           {/* Hero Section */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center bg-primary/10 rounded-full px-4 py-2 mb-6">
-              <TrendingUp className="h-4 w-4 mr-2 text-primary" />
-              <span className="text-sm font-medium">Real Interview Experiences</span>
+          <div className="text-center mb-16 animate-fade-in">
+            <div className="inline-flex items-center bg-gradient-to-r from-primary/10 to-accent/10 rounded-full px-6 py-3 mb-8 border border-primary/20">
+              <TrendingUp className="h-5 w-5 mr-3 text-primary" />
+              <span className="text-sm font-medium bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Real Interview Experiences
+              </span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            <h1 className="text-5xl md:text-7xl font-playfair font-bold gradient-text mb-6">
               Interview Experiences
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Learn from real interview experiences shared by the community. Get insights into what to expect and how to prepare.
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Learn from real interview experiences shared by our amazing community. Get insights into what to expect and how to prepare for your dream job.
             </p>
           </div>
 
@@ -266,91 +268,116 @@ const InterviewExperiencesPage = () => {
               ))}
             </div>
           ) : experiences.length > 0 ? (
-            <div className="grid gap-6">
-              {experiences.map(experience => (
-                <Card 
-                  key={experience.id} 
-                  className="hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => {
-                    if (!user) {
-                      toast({
-                        title: "Login Required",
-                        description: "Please login to view detailed interview experiences.",
-                        variant: "destructive",
-                        action: (
-                          <Button variant="outline" size="sm" asChild>
-                            <a href="/auth">Login</a>
-                          </Button>
-                        )
-                      });
-                      return;
-                    }
-                    // Handle navigation to experience detail if needed
-                  }}
+            <div className="grid gap-8">
+              {experiences.map((experience, index) => (
+                <div
+                  key={experience.id}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold mb-2">
-                          {experience.company} - {experience.role}
-                        </h3>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                          <span className="flex items-center gap-1">
-                            <User className="h-4 w-4" />
-                            {experience.user_name}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            {new Date(experience.date).toLocaleDateString()}
-                          </span>
-                          {experience.average_rating && (
-                            <span className="flex items-center gap-1">
-                              <Star className="h-4 w-4 text-yellow-500" />
-                              {experience.average_rating.toFixed(1)} ({experience.rating_count} ratings)
+                  <Card 
+                    className="modern-card hover-lift cursor-pointer group"
+                    onClick={() => {
+                      if (!user) {
+                        toast({
+                          title: "Login Required",
+                          description: "Please login to view detailed interview experiences.",
+                          variant: "destructive",
+                          action: (
+                            <Button variant="outline" size="sm" asChild>
+                              <a href="/auth">Login</a>
+                            </Button>
+                          )
+                        });
+                        return;
+                      }
+                      // Handle navigation to experience detail if needed
+                    }}
+                  >
+                    <CardContent className="p-8">
+                      <div className="flex items-start justify-between mb-6">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-4">
+                            <h3 className="text-xl font-playfair font-semibold gradient-text">
+                              {experience.company} - {experience.role}
+                            </h3>
+                            <div className="flex items-center gap-2">
+                              {experience.average_rating && (
+                                <div className="flex items-center gap-1 bg-primary/10 rounded-full px-3 py-1">
+                                  <Star className="h-4 w-4 text-primary fill-primary" />
+                                  <span className="text-sm font-medium text-primary">
+                                    {experience.average_rating.toFixed(1)}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-6 text-sm text-muted-foreground mb-4">
+                            <span className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-1">
+                              <User className="h-4 w-4" />
+                              {experience.user_name}
                             </span>
+                            <span className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-1">
+                              <Calendar className="h-4 w-4" />
+                              {new Date(experience.date).toLocaleDateString('en-US', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                              })}
+                            </span>
+                          </div>
+                          
+                          <p className="text-muted-foreground leading-relaxed mb-6">
+                            {experience.full_text}
+                          </p>
+                          
+                          {experience.rounds && Array.isArray(experience.rounds) && experience.rounds.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-6">
+                              {experience.rounds.map((round: any, index: number) => (
+                                <Badge 
+                                  key={index} 
+                                  variant="outline" 
+                                  className="bg-accent/10 border-accent/20 text-accent-foreground"
+                                >
+                                  {round.type || 'Round'} - {round.difficulty || 'N/A'}
+                                </Badge>
+                              ))}
+                            </div>
                           )}
                         </div>
-                        <p className="text-muted-foreground mb-4">
-                          {experience.full_text}
-                        </p>
-                        {experience.rounds && Array.isArray(experience.rounds) && experience.rounds.length > 0 && (
-                          <div className="flex gap-2 mb-4">
-                            {experience.rounds.map((round: any, index: number) => (
-                              <Badge key={index} variant="outline">
-                                {round.type || 'Round'} - {round.difficulty || 'N/A'}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
+                        
+                        <div className="flex items-center gap-3 ml-6">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="hover-lift bg-background/50 backdrop-blur-sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!user) {
+                                toast({
+                                  title: "Login Required",
+                                  description: "Please login to upvote experiences.",
+                                  variant: "destructive",
+                                  action: (
+                                    <Button variant="outline" size="sm" asChild>
+                                      <a href="/auth">Login</a>
+                                    </Button>
+                                  )
+                                });
+                                return;
+                              }
+                              // Handle upvote logic here if needed
+                            }}
+                          >
+                            <ThumbsUp className="h-4 w-4 mr-2" />
+                            {experience.upvote_count}
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => {
-                            if (!user) {
-                              toast({
-                                title: "Login Required",
-                                description: "Please login to upvote experiences.",
-                                variant: "destructive",
-                                action: (
-                                  <Button variant="outline" size="sm" asChild>
-                                    <a href="/auth">Login</a>
-                                  </Button>
-                                )
-                              });
-                              return;
-                            }
-                            // Handle upvote logic here if needed
-                          }}
-                        >
-                          <ThumbsUp className="h-4 w-4 mr-1" />
-                          {experience.upvote_count}
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               ))}
             </div>
           ) : (
