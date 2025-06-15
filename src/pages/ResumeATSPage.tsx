@@ -98,7 +98,7 @@ const ResumeATSPage = () => {
       // Read the file content
       const fileContent = await readFileContent(selectedFile);
       
-      // Call the edge function for AI analysis
+      // Call the edge function for local analysis
       const { data, error } = await supabase.functions.invoke('resume-ats-analysis', {
         body: {
           resumeContent: fileContent,
@@ -190,13 +190,13 @@ const ResumeATSPage = () => {
           <div className="text-center mb-12">
             <div className="inline-flex items-center bg-primary/10 rounded-full px-4 py-2 mb-6">
               <Zap className="h-4 w-4 mr-2 text-primary" />
-              <span className="text-sm font-medium">AI-Powered ATS Analysis</span>
+              <span className="text-sm font-medium">Free ATS Analysis</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               Resume ATS Optimizer
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Boost your chances of getting past Applicant Tracking Systems with our comprehensive resume analysis and optimization tool.
+              Boost your chances of getting past Applicant Tracking Systems with our free, comprehensive resume analysis and optimization tool.
             </p>
           </div>
 

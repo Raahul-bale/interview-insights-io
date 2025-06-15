@@ -1,8 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -28,6 +26,207 @@ interface ATSAnalysisResponse {
   jobSpecificFeedback?: string;
 }
 
+// Free, rule-based ATS analysis function
+function performLocalATSAnalysis(resumeContent: string, jobDescription?: string, fileName?: string): ATSAnalysisResponse {
+  const resume = resumeContent.toLowerCase();
+  const job = jobDescription?.toLowerCase() || '';
+  
+  // Common ATS-friendly section headers
+  const atsHeaders = [
+    'experience', 'work experience', 'professional experience', 'employment',
+    'education', 'skills', 'technical skills', 'core competencies',
+    'summary', 'profile', 'objective', 'contact', 'certifications'
+  ];
+  
+  // Common technical and soft skills keywords
+  const commonSkills = [
+    'javascript', 'python', 'java', 'react', 'node.js', 'sql', 'html', 'css',
+    'management', 'leadership', 'communication', 'teamwork', 'problem solving',
+    'project management', 'analytics', 'marketing', 'sales', 'customer service'
+  ];
+  
+  // Extract keywords from job description if provided
+  const jobKeywords = job ? extractKeywords(job) : [];
+  const resumeKeywords = extractKeywords(resume);
+  
+  // Keyword matching analysis
+  const foundKeywords = jobKeywords.filter(keyword => resume.includes(keyword));
+  const missingKeywords = jobKeywords.filter(keyword => !resume.includes(keyword));
+  const keywordMatchScore = jobKeywords.length > 0 
+    ? Math.round((foundKeywords.length / jobKeywords.length) * 100)
+    : Math.round((resumeKeywords.filter(k => commonSkills.includes(k)).length / commonSkills.length) * 100);
+  
+  // Format scoring
+  const formatScore = calculateFormatScore(resume, atsHeaders);
+  
+  // Readability scoring
+  const readabilityScore = calculateReadabilityScore(resumeContent);
+  
+  // Overall score (weighted average)
+  const overallScore = Math.round(
+    (keywordMatchScore * 0.4) + 
+    (formatScore * 0.3) + 
+    (readabilityScore * 0.3)
+  );
+  
+  // Generate suggestions
+  const suggestions = generateSuggestions(resume, formatScore, keywordMatchScore, missingKeywords);
+  
+  // Generate strengths
+  const strengths = generateStrengths(resume, foundKeywords, formatScore);
+  
+  // Job-specific feedback
+  const jobSpecificFeedback = jobDescription 
+    ? `Based on the job description, your resume matches ${foundKeywords.length} out of ${jobKeywords.length} key requirements. ${
+        foundKeywords.length > jobKeywords.length * 0.7 
+          ? 'This is a strong match for the role.' 
+          : 'Consider incorporating more relevant keywords and skills from the job posting.'
+      }`
+    : 'No job description provided. Analysis based on general ATS best practices.';
+  
+  return {
+    overallScore,
+    keywordMatch: keywordMatchScore,
+    formatScore,
+    readabilityScore,
+    suggestions,
+    strengths,
+    keywords: {
+      found: foundKeywords,
+      missing: missingKeywords.slice(0, 10) // Limit to top 10 missing keywords
+    },
+    jobSpecificFeedback
+  };
+}
+
+function extractKeywords(text: string): string[] {
+  const words = text.match(/\b[a-z]{3,}\b/g) || [];
+  const commonWords = new Set(['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'its', 'may', 'new', 'now', 'old', 'see', 'two', 'way', 'who', 'boy', 'did', 'man', 'men', 'put', 'say', 'she', 'too', 'use']);
+  
+  return [...new Set(words.filter(word => !commonWords.has(word)))]
+    .sort((a, b) => text.split(a).length - text.split(b).length)
+    .slice(0, 50); // Top 50 most frequent keywords
+}
+
+function calculateFormatScore(resume: string, atsHeaders: string[]): number {
+  let score = 60; // Base score
+  
+  // Check for standard headers
+  const headerMatches = atsHeaders.filter(header => resume.includes(header));
+  score += headerMatches.length * 5;
+  
+  // Check for bullet points
+  if (resume.includes('•') || resume.includes('-') || resume.includes('*')) {
+    score += 10;
+  }
+  
+  // Check for contact information patterns
+  if (resume.match(/@[a-z0-9.-]+\.[a-z]{2,}/)) score += 5; // Email
+  if (resume.match(/\(\d{3}\)\s*\d{3}-\d{4}|\d{3}-\d{3}-\d{4}/)) score += 5; // Phone
+  
+  // Penalize complex formatting indicators
+  if (resume.includes('table') || resume.includes('chart')) score -= 10;
+  if (resume.includes('image') || resume.includes('graphic')) score -= 10;
+  
+  return Math.min(100, Math.max(0, score));
+}
+
+function calculateReadabilityScore(resumeContent: string): number {
+  let score = 70; // Base score
+  
+  const sentences = resumeContent.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const words = resumeContent.split(/\s+/).filter(w => w.length > 0);
+  const avgWordsPerSentence = words.length / sentences.length;
+  
+  // Optimal range: 15-20 words per sentence
+  if (avgWordsPerSentence >= 15 && avgWordsPerSentence <= 20) {
+    score += 15;
+  } else if (avgWordsPerSentence < 10 || avgWordsPerSentence > 25) {
+    score -= 10;
+  }
+  
+  // Check for action verbs
+  const actionVerbs = ['achieved', 'created', 'developed', 'implemented', 'managed', 'led', 'improved', 'designed', 'built', 'delivered'];
+  const actionVerbCount = actionVerbs.filter(verb => resumeContent.toLowerCase().includes(verb)).length;
+  score += actionVerbCount * 2;
+  
+  // Check for quantifiable achievements
+  const numbers = resumeContent.match(/\d+%|\$\d+|\d+\+/g);
+  if (numbers && numbers.length > 0) {
+    score += Math.min(15, numbers.length * 3);
+  }
+  
+  return Math.min(100, Math.max(0, score));
+}
+
+function generateSuggestions(resume: string, formatScore: number, keywordScore: number, missingKeywords: string[]): string[] {
+  const suggestions: string[] = [];
+  
+  if (formatScore < 70) {
+    suggestions.push('Use standard section headings like "Work Experience", "Education", and "Skills"');
+    suggestions.push('Format your resume with clear bullet points and consistent spacing');
+  }
+  
+  if (keywordScore < 60) {
+    suggestions.push('Include more relevant keywords from the job description');
+    suggestions.push('Add technical skills and industry-specific terms');
+  }
+  
+  if (missingKeywords.length > 0) {
+    suggestions.push(`Consider adding these relevant keywords: ${missingKeywords.slice(0, 5).join(', ')}`);
+  }
+  
+  if (!resume.includes('@')) {
+    suggestions.push('Include a professional email address in your contact information');
+  }
+  
+  if (!resume.includes('achieved') && !resume.includes('improved') && !resume.includes('increased')) {
+    suggestions.push('Use action verbs and quantify your achievements with numbers and percentages');
+  }
+  
+  suggestions.push('Save your resume as a .docx or .pdf file for best ATS compatibility');
+  suggestions.push('Keep formatting simple and avoid complex layouts, tables, or graphics');
+  
+  return suggestions;
+}
+
+function generateStrengths(resume: string, foundKeywords: string[], formatScore: number): string[] {
+  const strengths: string[] = [];
+  
+  if (foundKeywords.length > 5) {
+    strengths.push(`Strong keyword relevance with ${foundKeywords.length} matching terms`);
+  }
+  
+  if (formatScore > 80) {
+    strengths.push('Well-structured format with clear sections');
+  }
+  
+  if (resume.includes('@') && resume.match(/\d{3}/)) {
+    strengths.push('Complete contact information provided');
+  }
+  
+  if (resume.includes('•') || resume.includes('-')) {
+    strengths.push('Good use of bullet points for readability');
+  }
+  
+  const actionVerbs = ['achieved', 'created', 'developed', 'implemented', 'managed', 'led', 'improved'];
+  const actionVerbCount = actionVerbs.filter(verb => resume.includes(verb)).length;
+  if (actionVerbCount > 2) {
+    strengths.push('Effective use of action verbs to describe accomplishments');
+  }
+  
+  const numbers = resume.match(/\d+%|\$\d+|\d+\+/g);
+  if (numbers && numbers.length > 2) {
+    strengths.push('Quantified achievements with specific metrics');
+  }
+  
+  if (strengths.length === 0) {
+    strengths.push('Resume content successfully uploaded for analysis');
+  }
+  
+  return strengths;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -41,130 +240,10 @@ serve(async (req) => {
       throw new Error('Resume content is required');
     }
 
-    if (!anthropicApiKey) {
-      throw new Error('Anthropic API key is not configured');
-    }
+    console.log('Starting local ATS analysis...');
 
-    // Create the analysis prompt
-    const systemPrompt = `You are an expert ATS (Applicant Tracking System) analyzer and resume optimization specialist. Your job is to analyze resumes and provide detailed feedback for improving ATS compatibility and job match.
-
-Analyze the provided resume and return a JSON response with the following structure:
-{
-  "overallScore": number (0-100),
-  "keywordMatch": number (0-100),
-  "formatScore": number (0-100), 
-  "readabilityScore": number (0-100),
-  "suggestions": string[],
-  "strengths": string[],
-  "keywords": {
-    "found": string[],
-    "missing": string[]
-  },
-  "jobSpecificFeedback": string
-}
-
-Scoring Guidelines:
-- overallScore: Overall ATS compatibility (average of other scores with weights)
-- keywordMatch: How well keywords match job requirements
-- formatScore: ATS-friendly formatting (standard headings, no complex layouts)
-- readabilityScore: Clarity, structure, and organization
-
-Provide specific, actionable suggestions and identify actual keywords from the content.`;
-
-    let userPrompt = `Please analyze this resume for ATS compatibility:
-
-Resume Content:
-${resumeContent}
-
-File Name: ${fileName}`;
-
-    if (jobDescription && jobDescription.trim()) {
-      userPrompt += `
-
-Job Description:
-${jobDescription}
-
-Please provide analysis specifically tailored to this job posting, focusing on how well the resume matches the job requirements.`;
-    } else {
-      userPrompt += `
-
-Please provide general ATS optimization advice since no specific job description was provided.`;
-    }
-
-    console.log('Sending request to Anthropic Claude for ATS analysis...');
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': anthropicApiKey,
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        temperature: 0.3,
-        messages: [
-          {
-            role: 'user',
-            content: `${systemPrompt}\n\n${userPrompt}`
-          }
-        ]
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error('Anthropic API error:', errorData);
-      
-      if (response.status === 429) {
-        throw new Error('Anthropic API rate limit exceeded. Please try again in a moment.');
-      } else if (response.status === 401) {
-        throw new Error('Anthropic API key is invalid. Please check your API key.');
-      } else if (response.status === 400) {
-        throw new Error('Invalid request to Anthropic API. Please try again.');
-      } else {
-        throw new Error(`Anthropic API error: ${response.status} - ${errorData}`);
-      }
-    }
-
-    const data = await response.json();
-    const analysisText = data.content[0].text;
-
-    console.log('Received analysis from Anthropic Claude:', analysisText);
-
-    // Try to parse the JSON response from Claude
-    let analysis: ATSAnalysisResponse;
-    try {
-      // Remove any markdown formatting if present
-      const cleanedText = analysisText.replace(/```json\n?|\n?```/g, '').trim();
-      analysis = JSON.parse(cleanedText);
-    } catch (parseError) {
-      console.error('Failed to parse Claude response as JSON:', parseError);
-      console.error('Raw response:', analysisText);
-      
-      // Fallback to structured analysis if JSON parsing fails
-      analysis = {
-        overallScore: 75,
-        keywordMatch: 70,
-        formatScore: 80,
-        readabilityScore: 75,
-        suggestions: [
-          "Unable to parse detailed analysis. Please try again.",
-          "Ensure your resume uses standard section headings",
-          "Include relevant keywords from the job description",
-          "Use bullet points for better readability"
-        ],
-        strengths: [
-          "Resume content provided for analysis"
-        ],
-        keywords: {
-          found: [],
-          missing: []
-        },
-        jobSpecificFeedback: "Analysis completed but detailed feedback unavailable due to parsing error."
-      };
-    }
+    // Perform free, rule-based ATS analysis
+    const analysis = performLocalATSAnalysis(resumeContent, jobDescription, fileName);
 
     // Ensure scores are within valid range
     analysis.overallScore = Math.max(0, Math.min(100, analysis.overallScore || 75));
