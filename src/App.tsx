@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { TourProvider } from "./contexts/TourContext";
 import HomePage from "./pages/HomePage";
 import SubmitExperience from "./pages/SubmitExperience";
 import ChatPage from "./pages/ChatPage";
@@ -20,11 +21,12 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <TourOverlay />
+      <TourProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <TourOverlay />
           <BrowserRouter>
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -76,8 +78,9 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-        </TooltipProvider>
-      </ThemeProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </TourProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
