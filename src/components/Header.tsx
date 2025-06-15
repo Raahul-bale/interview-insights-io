@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut, Mail } from "lucide-react";
+import { User, LogOut, Mail, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "./ThemeToggle";
@@ -147,6 +147,12 @@ const Header = () => {
                     <Link to="/profile" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
                       <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile?tab=experiences" className="cursor-pointer">
+                      <Edit className="mr-2 h-4 w-4" />
+                      <span>My Experiences</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => window.location.href = 'mailto:baleraahul@gmail.com?subject=Query from Interview Experience App'}>

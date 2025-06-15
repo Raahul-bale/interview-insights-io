@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import AboutUs from "@/components/AboutUs";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Upload, User, Mail, FileText, Linkedin, Lock, Camera } from "lucide-react";
+import { ArrowLeft, Upload, User, Mail, FileText, Linkedin, Lock, Camera, Edit, Calendar, Star, ThumbsUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -22,12 +24,28 @@ interface ProfileData {
   avatar_url: string;
 }
 
+interface UserExperience {
+  id: string;
+  company: string;
+  role: string;
+  date: string;
+  rounds: any;
+  average_rating: number;
+  rating_count: number;
+  upvote_count: number;
+  created_at: string;
+}
+
 const ProfilePage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'profile';
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [experiencesLoading, setExperiencesLoading] = useState(false);
+  const [userExperiences, setUserExperiences] = useState<UserExperience[]>([]);
   const [profile, setProfile] = useState<ProfileData>({
     full_name: "",
     email: "",
@@ -47,7 +65,10 @@ const ProfilePage = () => {
       return;
     }
     fetchProfile();
-  }, [user, navigate]);
+    if (activeTab === 'experiences') {
+      fetchUserExperiences();
+    }
+  }, [user, navigate, activeTab]);
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -92,6 +113,31 @@ const ProfilePage = () => {
         description: "Failed to load profile data",
         variant: "destructive",
       });
+    }
+  };
+
+  const fetchUserExperiences = async () => {
+    if (!user) return;
+
+    setExperiencesLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('interview_posts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setUserExperiences(data || []);
+    } catch (error) {
+      console.error('Error fetching user experiences:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load your experiences",
+        variant: "destructive",
+      });
+    } finally {
+      setExperiencesLoading(false);
     }
   };
 
@@ -287,19 +333,26 @@ const ProfilePage = () => {
           </Button>
         </div>
 
-        <div className="max-w-2xl mx-auto space-y-6">
-          {/* Profile Header */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Profile Settings</CardTitle>
-              <p className="text-muted-foreground">
-                Manage your personal information and account settings
-              </p>
-            </CardHeader>
-          </Card>
+        <div className="max-w-4xl mx-auto space-y-6">
+          <Tabs value={activeTab} onValueChange={(value) => navigate(`/profile?tab=${value}`)}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="profile">Profile Settings</TabsTrigger>
+              <TabsTrigger value="experiences">My Experiences</TabsTrigger>
+            </TabsList>
 
-          {/* Avatar Upload */}
-          <Card>
+            <TabsContent value="profile" className="space-y-6">
+              {/* Profile Header */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl">Profile Settings</CardTitle>
+                  <p className="text-muted-foreground">
+                    Manage your personal information and account settings
+                  </p>
+                </CardHeader>
+              </Card>
+
+              {/* Avatar Upload */}
+              <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Camera className="h-5 w-5" />
@@ -456,7 +509,100 @@ const ProfilePage = () => {
                 {loading ? "Updating..." : "Change Password"}
               </Button>
             </CardContent>
-          </Card>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="experiences" className="space-y-6">
+              {/* Experiences Header */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <FileText className="h-6 w-6" />
+                    My Interview Experiences
+                  </CardTitle>
+                  <p className="text-muted-foreground">
+                    Manage and edit your shared interview experiences
+                  </p>
+                </CardHeader>
+              </Card>
+
+              {/* Experiences List */}
+              <Card>
+                <CardContent className="p-6">
+                  {experiencesLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="text-muted-foreground">Loading your experiences...</div>
+                    </div>
+                  ) : userExperiences.length === 0 ? (
+                    <div className="text-center py-8">
+                      <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No experiences yet</h3>
+                      <p className="text-muted-foreground mb-4">
+                        You haven't shared any interview experiences yet.
+                      </p>
+                      <Link to="/submit">
+                        <Button>Share Your First Experience</Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {userExperiences.map((experience) => (
+                        <Card key={experience.id} className="border border-border">
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h3 className="font-semibold text-lg">{experience.company}</h3>
+                                  <Badge variant="secondary">{experience.role}</Badge>
+                                </div>
+                                
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="h-4 w-4" />
+                                    {new Date(experience.date).toLocaleDateString()}
+                                  </div>
+                                  
+                                  {experience.rating_count > 0 && (
+                                    <div className="flex items-center gap-1">
+                                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                      {experience.average_rating.toFixed(1)} ({experience.rating_count} ratings)
+                                    </div>
+                                  )}
+                                  
+                                  <div className="flex items-center gap-1">
+                                    <ThumbsUp className="h-4 w-4" />
+                                    {experience.upvote_count} upvotes
+                                  </div>
+                                </div>
+
+                                <div className="text-sm text-muted-foreground">
+                                  {Array.isArray(experience.rounds) ? experience.rounds.length : 0} interview round{Array.isArray(experience.rounds) && experience.rounds.length !== 1 ? 's' : ''}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Link to={`/submit/${experience.id}`}>
+                                  <Button variant="outline" size="sm">
+                                    <Edit className="h-4 w-4 mr-1" />
+                                    Edit
+                                  </Button>
+                                </Link>
+                                <Link to={`/experience/${experience.id}`}>
+                                  <Button variant="ghost" size="sm">
+                                    View
+                                  </Button>
+                                </Link>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
