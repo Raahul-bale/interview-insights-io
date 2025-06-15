@@ -12,13 +12,18 @@ const TourButton = () => {
   const { user } = useAuth();
   const { startTour, hasSeenTour } = useTour(user);
 
+  const handleTourClick = () => {
+    // Always start/restart the tour when clicked
+    startTour();
+  };
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
           variant="ghost"
           size="icon"
-          onClick={startTour}
+          onClick={handleTourClick}
           className="relative"
         >
           <HelpCircle className="h-5 w-5" />
