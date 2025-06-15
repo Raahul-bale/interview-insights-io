@@ -9,6 +9,8 @@ interface Profile {
   bio: string | null;
   avatar_url: string | null;
   linkedin_url: string | null;
+  follower_count: number | null;
+  following_count: number | null;
 }
 
 export const useProfile = (userId: string | null) => {

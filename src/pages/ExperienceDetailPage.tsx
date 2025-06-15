@@ -300,11 +300,17 @@ const ExperienceDetailPage = () => {
                     </div>
                   </div>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 lg:shrink-0">
-                    <StarRating
-                      experienceId={experience.id}
-                      averageRating={experience.average_rating}
-                      ratingCount={experience.rating_count}
-                    />
+                    <div className="flex flex-col items-center gap-2">
+                      <StarRating
+                        experienceId={experience.id}
+                        averageRating={experience.average_rating}
+                        ratingCount={experience.rating_count}
+                      />
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <span className="font-medium">{profile?.follower_count || 0}</span>
+                        <span>followers</span>
+                      </div>
+                    </div>
                     <UpvoteButton
                       experienceId={experience.id}
                       upvoteCount={experience.upvote_count}
