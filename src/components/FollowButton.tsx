@@ -21,7 +21,7 @@ const FollowButton = ({
   const { user } = useAuth();
   const { isFollowing, followerCount, loading, toggleFollow } = useFollow(targetUserId);
 
-  // Don't show follow button for own profile
+  // Don't show follow button for own profile, but show follower count
   if (user?.id === targetUserId) {
     return showCount ? (
       <div className={`flex items-center gap-2 text-sm text-muted-foreground ${className}`}>

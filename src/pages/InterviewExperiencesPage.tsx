@@ -57,7 +57,7 @@ const InterviewExperiencesPage = () => {
     try {
       let query = supabase
         .from('interview_posts')
-        .select('*');
+        .select('*, profiles(full_name, avatar_url, follower_count)');
 
       if (searchTerm) {
         query = query.or(`company.ilike.%${searchTerm}%,role.ilike.%${searchTerm}%,full_text.ilike.%${searchTerm}%`);
@@ -328,12 +328,14 @@ const InterviewExperiencesPage = () => {
                                 day: 'numeric' 
                               })}
                             </span>
-                            {experience.user_id && (
+                            {experience.user_id ? (
                               <FollowButton 
                                 targetUserId={experience.user_id} 
                                 size="sm"
                                 showCount={true}
                               />
+                            ) : (
+                              <span className="text-xs text-muted-foreground">Follow feature available for registered users</span>
                             )}
                           </div>
                           
