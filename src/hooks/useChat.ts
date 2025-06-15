@@ -54,9 +54,9 @@ export const useChat = (experienceId?: string) => {
         .select('*')
         .eq('experience_id', experienceId)
         .eq('requester_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (checkError && checkError.code !== 'PGRST116') throw checkError;
+      if (checkError) throw checkError;
 
       // If conversation exists, handle based on status
       if (existingConv) {
@@ -276,9 +276,9 @@ export const useChat = (experienceId?: string) => {
         .select('*')
         .eq('experience_id', experienceId)
         .eq('requester_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) throw error;
       return data as ChatConversation;
     } catch (error) {
       console.error('Error getting current conversation:', error);
