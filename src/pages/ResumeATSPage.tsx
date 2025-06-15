@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Upload, 
   FileText, 
@@ -37,6 +38,7 @@ interface ATSAnalysis {
     found: string[];
     missing: string[];
   };
+  jobSpecificFeedback?: string;
 }
 
 const ResumeATSPage = () => {
@@ -93,48 +95,72 @@ const ResumeATSPage = () => {
     setIsAnalyzing(true);
 
     try {
-      // Simulate ATS analysis (in a real app, this would call an AI service)
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      // Mock analysis results
-      const mockAnalysis: ATSAnalysis = {
-        overallScore: Math.floor(Math.random() * 30) + 70, // 70-100
-        keywordMatch: Math.floor(Math.random() * 40) + 60, // 60-100
-        formatScore: Math.floor(Math.random() * 20) + 80, // 80-100
-        readabilityScore: Math.floor(Math.random() * 25) + 75, // 75-100
-        suggestions: [
-          "Add more relevant keywords from the job description",
-          "Use standard section headings like 'Work Experience' and 'Education'",
-          "Include quantifiable achievements with numbers and percentages",
-          "Optimize your professional summary with industry keywords",
-          "Use a simple, ATS-friendly format without complex layouts"
-        ],
-        strengths: [
-          "Clean, professional formatting",
-          "Proper use of bullet points",
-          "Clear contact information",
-          "Relevant work experience section"
-        ],
-        keywords: {
-          found: ["JavaScript", "React", "Node.js", "SQL", "Git", "Agile"],
-          missing: ["TypeScript", "AWS", "Docker", "MongoDB", "REST API", "Scrum"]
+      // Read the file content
+      const fileContent = await readFileContent(selectedFile);
+      
+      // Call the edge function for AI analysis
+      const { data, error } = await supabase.functions.invoke('resume-ats-analysis', {
+        body: {
+          resumeContent: fileContent,
+          jobDescription: jobDescription.trim() || null,
+          fileName: selectedFile.name
         }
-      };
+      });
 
-      setAnalysis(mockAnalysis);
+      if (error) {
+        throw new Error(error.message || 'Analysis failed');
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setAnalysis(data);
       toast({
         title: "Analysis Complete!",
-        description: "Your resume has been analyzed for ATS compatibility.",
+        description: jobDescription.trim() 
+          ? "Your resume has been analyzed against the job description."
+          : "Your resume has been analyzed for general ATS compatibility.",
       });
     } catch (error) {
+      console.error('Resume analysis error:', error);
       toast({
         title: "Analysis Failed",
-        description: "Something went wrong. Please try again.",
+        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  // Helper function to read file content
+  const readFileContent = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (event) => {
+        const result = event.target?.result;
+        if (typeof result === 'string') {
+          resolve(result);
+        } else {
+          reject(new Error('Failed to read file as text'));
+        }
+      };
+      
+      reader.onerror = () => {
+        reject(new Error('Error reading file'));
+      };
+      
+      // For PDF files, we'll get binary data, but for now we'll just read as text
+      // In a production app, you'd want to use a PDF parser
+      if (file.type === 'application/pdf') {
+        // For now, show a message that PDF parsing isn't fully implemented
+        resolve(`PDF file: ${file.name}\nNote: PDF text extraction is simplified. For best results, upload a .docx file or copy/paste your resume content.`);
+      } else {
+        reader.readAsText(file);
+      }
+    });
   };
 
   const getScoreColor = (score: number) => {
@@ -234,11 +260,16 @@ const ResumeATSPage = () => {
                 </CardHeader>
                 <CardContent>
                   <Textarea
-                    placeholder="Paste the job description here to get more targeted analysis..."
+                    placeholder="Paste the job description here to get targeted analysis based on specific job requirements, skills, and qualifications..."
                     value={jobDescription}
                     onChange={(e) => setJobDescription(e.target.value)}
                     rows={6}
                   />
+                  {jobDescription.trim() && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      Job description provided - analysis will be tailored to this role
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -386,6 +417,23 @@ const ResumeATSPage = () => {
                     <Download className="mr-2 h-4 w-4" />
                     Download Detailed Report
                   </Button>
+
+                  {/* Job-Specific Feedback */}
+                  {analysis.jobSpecificFeedback && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Target className="mr-2 h-5 w-5" />
+                          Job-Specific Analysis
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {analysis.jobSpecificFeedback}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
                 </>
               ) : (
                 <Card>
@@ -393,7 +441,7 @@ const ResumeATSPage = () => {
                     <FileText className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
                     <h3 className="text-lg font-semibold mb-2">Ready for Analysis</h3>
                     <p className="text-muted-foreground">
-                      Upload your resume and click "Analyze Resume" to get started with ATS optimization.
+                      Upload your resume and optionally add a job description for targeted analysis.
                     </p>
                   </CardContent>
                 </Card>
