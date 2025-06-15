@@ -47,6 +47,7 @@ const ProfilePage = () => {
   const [uploading, setUploading] = useState(false);
   const [experiencesLoading, setExperiencesLoading] = useState(false);
   const [userExperiences, setUserExperiences] = useState<UserExperience[]>([]);
+  const [hasBlockedUsers, setHasBlockedUsers] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
     full_name: "",
     email: "",
@@ -604,7 +605,7 @@ const ProfilePage = () => {
               </Card>
 
               {/* Blocked Users Management */}
-              {userExperiences.length > 0 && (
+              {userExperiences.length > 0 && hasBlockedUsers && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-xl">Blocked Users Management</CardTitle>
@@ -619,9 +620,24 @@ const ProfilePage = () => {
                         company: exp.company,
                         role: exp.role
                       }))}
+                      onBlockedUsersChange={setHasBlockedUsers}
                     />
                   </CardContent>
                 </Card>
+              )}
+
+              {/* Hidden BlockedUsers component to check for blocked users */}
+              {userExperiences.length > 0 && !hasBlockedUsers && (
+                <div style={{ display: 'none' }}>
+                  <BlockedUsers
+                    experiences={userExperiences.map(exp => ({
+                      id: exp.id,
+                      company: exp.company,
+                      role: exp.role
+                    }))}
+                    onBlockedUsersChange={setHasBlockedUsers}
+                  />
+                </div>
               )}
             </TabsContent>
           </Tabs>

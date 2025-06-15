@@ -14,9 +14,10 @@ interface BlockedUsersProps {
     company: string;
     role: string;
   }>;
+  onBlockedUsersChange?: (hasBlockedUsers: boolean) => void;
 }
 
-const BlockedUsers = ({ experiences }: BlockedUsersProps) => {
+const BlockedUsers = ({ experiences, onBlockedUsersChange }: BlockedUsersProps) => {
   const { user } = useAuth();
   const { getBlockedUsers, unblockUser } = useChat();
   const [blockedUsers, setBlockedUsers] = useState<any[]>([]);
@@ -25,6 +26,10 @@ const BlockedUsers = ({ experiences }: BlockedUsersProps) => {
   useEffect(() => {
     loadAllBlockedUsers();
   }, [experiences]);
+
+  useEffect(() => {
+    onBlockedUsersChange?.(blockedUsers.length > 0);
+  }, [blockedUsers, onBlockedUsersChange]);
 
   const loadAllBlockedUsers = async () => {
     if (!experiences.length) return;

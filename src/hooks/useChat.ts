@@ -344,10 +344,7 @@ export const useChat = (experienceId?: string) => {
     try {
       const { data, error } = await supabase
         .from('chat_conversations')
-        .select(`
-          *,
-          profiles!chat_conversations_requester_id_fkey(full_name, avatar_url)
-        `)
+        .select('*')
         .eq('experience_id', experienceId)
         .eq('experience_owner_id', user.id)
         .eq('status', 'blocked');
