@@ -16,6 +16,7 @@ import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import TermsPage from "./pages/TermsPage";
 import ResumeATSPage from "./pages/ResumeATSPage";
+import InterviewExperiencesPage from "./pages/InterviewExperiencesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import TourOverlay from "./components/TourOverlay";
 
@@ -83,6 +84,7 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            <Route path="/interview-experiences" element={<InterviewExperiencesPage />} />
             <Route path="/terms" element={<TermsPage />} />
             {/* Redirect old routes to new auth page */}
             <Route path="/login" element={<AuthPage />} />

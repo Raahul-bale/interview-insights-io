@@ -86,14 +86,21 @@ const Header = () => {
               <span>Interview Insights</span>
             </Link>
           
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link 
-              to="/" 
-              className="text-foreground hover:text-primary transition-colors"
-              data-tour="nav-home"
-            >
-              Home
-            </Link>
+           <nav className="hidden md:flex items-center space-x-6">
+             <Link 
+               to="/" 
+               className="text-foreground hover:text-primary transition-colors"
+               data-tour="nav-home"
+             >
+               Home
+             </Link>
+             <Link 
+               to="/interview-experiences" 
+               className="text-foreground hover:text-primary transition-colors"
+               data-tour="nav-experiences"
+             >
+               Experiences
+             </Link>
             {user && (
               <>
                 <Link 

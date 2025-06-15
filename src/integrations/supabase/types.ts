@@ -125,6 +125,102 @@ export type Database = {
         }
         Relationships: []
       }
+      interview_experience_upvotes: {
+        Row: {
+          created_at: string
+          experience_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          experience_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          experience_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interview_experience_upvotes_experience_id_fkey"
+            columns: ["experience_id"]
+            isOneToOne: false
+            referencedRelation: "interview_experiences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interview_experience_upvotes_experience_id_fkey"
+            columns: ["experience_id"]
+            isOneToOne: false
+            referencedRelation: "interview_experiences_with_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      interview_experiences: {
+        Row: {
+          company_name: string
+          created_at: string
+          description: string
+          difficulty_rating: number
+          experience_level: string
+          id: string
+          interview_date: string | null
+          interview_process: string | null
+          interview_type: string
+          outcome: string | null
+          overall_rating: number
+          position: string
+          questions_asked: string | null
+          tips: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          description: string
+          difficulty_rating: number
+          experience_level: string
+          id?: string
+          interview_date?: string | null
+          interview_process?: string | null
+          interview_type: string
+          outcome?: string | null
+          overall_rating: number
+          position: string
+          questions_asked?: string | null
+          tips?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          description?: string
+          difficulty_rating?: number
+          experience_level?: string
+          id?: string
+          interview_date?: string | null
+          interview_process?: string | null
+          interview_type?: string
+          outcome?: string | null
+          overall_rating?: number
+          position?: string
+          questions_asked?: string | null
+          tips?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       interview_posts: {
         Row: {
           average_rating: number | null
@@ -214,7 +310,31 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      interview_experiences_with_details: {
+        Row: {
+          author_avatar: string | null
+          author_name: string | null
+          company_name: string | null
+          created_at: string | null
+          description: string | null
+          difficulty_rating: number | null
+          experience_level: string | null
+          id: string | null
+          interview_date: string | null
+          interview_process: string | null
+          interview_type: string | null
+          outcome: string | null
+          overall_rating: number | null
+          position: string | null
+          questions_asked: string | null
+          tips: string | null
+          title: string | null
+          updated_at: string | null
+          upvote_count: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       binary_quantize: {
