@@ -86,7 +86,10 @@ export const useChat = (experienceId?: string) => {
         else if (existingConv.status === 'declined') {
           const { data, error } = await supabase
             .from('chat_conversations')
-            .update({ status: 'pending' })
+            .update({ 
+              status: 'pending',
+              updated_at: new Date().toISOString()
+            })
             .eq('id', existingConv.id)
             .select()
             .single();

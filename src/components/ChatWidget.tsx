@@ -10,6 +10,7 @@ import { MessageCircle, Send, Check, X, User, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChat, ChatConversation, ChatMessage } from '@/hooks/useChat';
 import { useProfile } from '@/hooks/useProfile';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ChatWidgetProps {
   experienceId: string;
@@ -57,11 +58,36 @@ const ChatWidget = ({ experienceId, experienceOwnerId, experienceOwnerName }: Ch
     }
   };
 
+  // Set up real-time conversation updates
+  useEffect(() => {
+    if (!user || !experienceId) return;
+
+    const channel = supabase
+      .channel(`chat-widget-${experienceId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_conversations',
+          filter: `experience_id=eq.${experienceId}`
+        },
+        () => loadConversation()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, experienceId]);
+
   const handleStartChat = async () => {
     if (!user) return;
     const newConv = await createConversation(experienceOwnerId);
     if (newConv) {
       setConversation(newConv);
+      // Close the dialog after successful request
+      setIsOpen(false);
     }
   };
 
