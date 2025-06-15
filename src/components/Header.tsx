@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "./ThemeToggle";
 import TourButton from "./TourButton";
+import ChatNotifications from "./ChatNotifications";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -133,6 +134,7 @@ const Header = () => {
             <div data-tour="theme-toggle">
               <ThemeToggle />
             </div>
+            <ChatNotifications />
             {user ? (
               <div data-tour="user-menu">
                 <DropdownMenu>
