@@ -1,10 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Clock } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { FileText, Clock, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import StarRating from "./StarRating";
 import UpvoteButton from "./UpvoteButton";
 import { useRealTimeExperiences } from "@/hooks/useRealTimeExperiences";
+import { useProfile } from "@/hooks/useProfile";
 
 interface AllExperiencesProps {
   limit?: number;
@@ -76,29 +78,41 @@ const AllExperiences = ({ limit }: AllExperiencesProps) => {
       </div>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {experiences.map((experience) => (
-          <Card 
-            key={experience.id} 
-            className="hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={(e) => {
-              // Don't navigate if clicking on interactive elements
-              if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('[role="button"]')) {
-                return;
-              }
-              navigate(`/experience/${experience.id}`);
-            }}
-          >
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <CardTitle className="text-lg">
-                    {experience.company} - {experience.role}
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    By {experience.user_name} • {new Date(experience.date).toLocaleDateString()}
-                  </p>
-                </div>
+        {experiences.map((experience) => {
+          const ExperienceCardWithProfile = () => {
+            const { profile } = useProfile(experience.user_id);
+            
+            return (
+              <Card 
+                key={experience.id} 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={(e) => {
+                  // Don't navigate if clicking on interactive elements
+                  if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('[role="button"]')) {
+                    return;
+                  }
+                  navigate(`/experience/${experience.id}`);
+                }}
+              >
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg">
+                        {experience.company} - {experience.role}
+                      </CardTitle>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Avatar className="h-5 w-5">
+                          <AvatarImage src={profile?.avatar_url || undefined} alt={experience.user_name} />
+                          <AvatarFallback className="text-xs">
+                            <User className="h-3 w-3" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          By {profile?.full_name || experience.user_name} • {new Date(experience.date).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
                 <StarRating
                   experienceId={experience.id}
                   averageRating={experience.average_rating}
@@ -126,8 +140,12 @@ const AllExperiences = ({ limit }: AllExperiencesProps) => {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        ))}
+              </Card>
+            );
+          };
+          
+          return <ExperienceCardWithProfile key={experience.id} />;
+        })}
       </div>
     </div>
   );
