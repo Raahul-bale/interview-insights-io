@@ -47,6 +47,15 @@ const TOUR_STEPS: TourStep[] = [
     showSkip: true
   },
   {
+    target: '[data-tour="nav-ats"]',
+    title: 'Resume ATS Optimizer 📄',
+    content: 'Our upcoming ATS optimization tool will help you make your resume ATS-friendly with keyword analysis and formatting tips.',
+    placement: 'bottom',
+    showNext: true,
+    showPrev: true,
+    showSkip: true
+  },
+  {
     target: '[data-tour="nav-conversations"]',
     title: 'My Chat Conversations 💬',
     content: 'Manage all your chat conversations with experience authors. Accept, decline, or view chat requests here.',
