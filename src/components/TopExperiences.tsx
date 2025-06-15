@@ -97,23 +97,30 @@ const TopExperiences = ({ limit = 5 }: TopExperiencesProps) => {
                       <CardTitle className="text-lg">
                         {experience.company} - {experience.role}
                       </CardTitle>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Avatar className="h-5 w-5">
-                          <AvatarImage src={profile?.avatar_url || undefined} alt={experience.user_name} />
-                          <AvatarFallback className="text-xs">
-                            <User className="h-3 w-3" />
-                          </AvatarFallback>
-                        </Avatar>
-                        <p className="text-sm text-muted-foreground">
-                          By {profile?.full_name || experience.user_name} • {new Date(experience.date).toLocaleDateString()}
-                        </p>
-                      </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Avatar className="h-5 w-5">
+                            <AvatarImage src={profile?.avatar_url || undefined} alt={experience.user_name} />
+                            <AvatarFallback className="text-xs">
+                              <User className="h-3 w-3" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <p className="text-sm text-muted-foreground">
+                            By {profile?.full_name || experience.user_name} • {new Date(experience.date).toLocaleDateString()}
+                          </p>
+                        </div>
                     </div>
-                <StarRating
-                  experienceId={experience.id}
-                  averageRating={experience.average_rating}
-                  ratingCount={experience.rating_count}
-                />
+                <div className="flex flex-col items-end">
+                  <StarRating
+                    experienceId={experience.id}
+                    averageRating={experience.average_rating}
+                    ratingCount={experience.rating_count}
+                  />
+                  {profile?.follower_count !== undefined && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {profile.follower_count} followers
+                    </p>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent>
