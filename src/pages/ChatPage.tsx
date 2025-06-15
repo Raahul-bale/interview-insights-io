@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, FormEvent } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
+import SEO from "@/components/SEO";
 import AboutUs from "@/components/AboutUs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -203,8 +204,29 @@ const ChatPage = () => {
     }
   };
 
+  const chatPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "AI Interview Prep Assistant",
+    "description": "Get personalized interview preparation based on real experiences with our AI assistant",
+    "url": "https://your-domain.com/chat",
+    "mainEntity": {
+      "@type": "SoftwareApplication",
+      "name": "Interview Prep AI Assistant",
+      "applicationCategory": "BusinessApplication",
+      "description": "AI-powered interview preparation based on real candidate experiences"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="AI Interview Prep Assistant - Interview Insights"
+        description="Get personalized interview preparation based on real experiences. Chat with our AI assistant for company-specific tips, behavioral questions, and technical interview advice."
+        keywords="AI interview preparation, interview assistant, personalized interview coaching, interview chat bot, AI career advice"
+        canonicalUrl="/chat"
+        schema={chatPageSchema}
+      />
       <Header />
       
       <div className="container mx-auto px-4 py-8">

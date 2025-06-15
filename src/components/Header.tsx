@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import SkipLink from "@/components/SkipLink";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
@@ -75,9 +76,11 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-card border-b border-border sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
+    <>
+      <SkipLink />
+      <header className="bg-card border-b border-border sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
           <Link to="/" className="text-2xl font-bold text-primary" data-tour="header-logo">
             Interview Insights
           </Link>
@@ -176,6 +179,7 @@ const Header = () => {
         </div>
       </div>
     </header>
+    </>
   );
 };
 

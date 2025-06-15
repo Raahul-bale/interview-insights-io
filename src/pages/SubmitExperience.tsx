@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -308,8 +309,28 @@ const SubmitExperience = () => {
     );
   }
 
+  const submitPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Share Interview Experience",
+    "description": "Help fellow students by sharing your interview journey and experiences",
+    "url": "https://your-domain.com/submit",
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "Interview Insights",
+      "url": "https://your-domain.com"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title={`${isEditing ? "Edit Interview Experience" : "Share Your Interview Experience"} - Interview Insights`}
+        description={isEditing ? "Update your interview experience details and help other candidates prepare better." : "Help fellow students by sharing your interview journey and experiences. Share questions, answers, and valuable tips."}
+        keywords="submit interview experience, share interview questions, interview tips, help students, interview preparation community"
+        canonicalUrl={isEditing ? `/submit/${experienceId}` : "/submit"}
+        schema={submitPageSchema}
+      />
       <Header />
       
       <div className="container mx-auto px-4 py-8">

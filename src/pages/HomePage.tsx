@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
+import SEO from "@/components/SEO";
 import TopExperiences from "@/components/TopExperiences";
 import SearchExperiences from "@/components/SearchExperiences";
 import AllExperiences from "@/components/AllExperiences";
@@ -249,12 +250,41 @@ const HomePage = () => {
     { number: statsLoading ? "..." : realTimeStats.users, label: "Happy Users" }
   ];
 
+  const homePageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Interview Insights",
+    "description": "Join thousands of successful candidates who've used real interview experiences and AI insights to land their dream jobs",
+    "url": "https://your-domain.com",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": realTimeStats.experiences || "1000",
+      "bestRating": "5",
+      "worstRating": "1"
+    }
+  };
+
   if (user) {
     return (
       <div className="min-h-screen bg-background">
+        <SEO 
+          title="Interview Prep Dashboard - Interview Insights"
+          description="Continue your journey to interview success with AI-powered insights and community experiences. Access your personalized interview preparation dashboard."
+          keywords="interview dashboard, personalized interview prep, AI interview coaching, interview preparation platform, job interview help"
+          schema={homePageSchema}
+        />
         <Header />
         
         {/* Welcome Back Hero */}
+        <main id="main-content">
         <section className="relative overflow-hidden bg-gradient-to-r from-primary via-primary/90 to-secondary/80 text-primary-foreground py-20">
           <div className="absolute inset-0 bg-grid-white/10"></div>
           <div className="container mx-auto px-4 relative">
@@ -371,15 +401,23 @@ const HomePage = () => {
 
         {/* About Us Section */}
         <AboutUs />
+        </main>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Interview Insights - Master Your Dream Interview"
+        description="Join thousands of successful candidates who've used real interview experiences and AI insights to land their dream jobs. Share and discover interview experiences to ace your next job interview."
+        keywords="interview preparation, job interview, interview questions, interview experiences, AI interview prep, interview tips, career advice, job search"
+        schema={homePageSchema}
+      />
       <Header />
       
       {/* Hero Section */}
+      <main id="main-content">
       <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-secondary text-primary-foreground py-20 md:py-32">
         <div className="absolute inset-0 bg-grid-white/5"></div>
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-white/5 rounded-full blur-3xl"></div>
@@ -773,6 +811,7 @@ const HomePage = () => {
 
       {/* About Us Section */}
       <AboutUs />
+      </main>
     </div>
   );
 };

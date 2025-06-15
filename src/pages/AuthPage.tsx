@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import SEO from '@/components/SEO';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -134,8 +135,24 @@ const AuthPage = () => {
     setIsLoading(false);
   };
 
+  const authPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Login & Sign Up - Interview Insights",
+    "description": "Access your Interview Insights account to get AI-powered interview preparation",
+    "url": "https://your-domain.com/auth"
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <SEO 
+        title="Login & Sign Up - Interview Insights"
+        description="Access your Interview Insights account to get AI-powered interview preparation, share experiences, and connect with the interview prep community."
+        keywords="interview insights login, sign up interview prep, interview preparation account, AI interview coaching access"
+        canonicalUrl="/auth"
+        schema={authPageSchema}
+        noIndex={true}
+      />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Interview Prep Hub</CardTitle>
