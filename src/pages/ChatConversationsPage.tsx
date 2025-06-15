@@ -48,7 +48,7 @@ const ChatConversationsPage = () => {
       setLoading(true);
       await fetchConversations();
       
-      // Get detailed conversation info
+      // Get detailed conversation info (exclude declined conversations)
       const { data: detailedConversations, error } = await supabase
         .from('chat_conversations')
         .select(`
@@ -56,6 +56,7 @@ const ChatConversationsPage = () => {
           interview_posts(company, role)
         `)
         .or(`requester_id.eq.${user?.id},experience_owner_id.eq.${user?.id}`)
+        .neq('status', 'declined')
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
