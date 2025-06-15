@@ -38,7 +38,7 @@ const UpvoteButton = ({
       if (hasUpvoted) {
         // Remove upvote
         const { error } = await supabase
-          .from('experience_upvotes')
+          .from('interview_experience_upvotes')
           .delete()
           .eq('user_id', user.id)
           .eq('experience_id', experienceId);
@@ -47,7 +47,7 @@ const UpvoteButton = ({
       } else {
         // Add upvote
         const { error } = await supabase
-          .from('experience_upvotes')
+          .from('interview_experience_upvotes')
           .insert({
             user_id: user.id,
             experience_id: experienceId
