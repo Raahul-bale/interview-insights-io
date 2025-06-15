@@ -18,6 +18,7 @@ import TermsPage from "./pages/TermsPage";
 import ResumeATSPage from "./pages/ResumeATSPage";
 import InterviewExperiencesPage from "./pages/InterviewExperiencesPage";
 import ChatConversationPage from "./pages/ChatConversationPage";
+import ChatConversationsPage from "./pages/ChatConversationsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import TourOverlay from "./components/TourOverlay";
 
@@ -66,6 +67,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ChatConversationPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/conversations" 
+              element={
+                <ProtectedRoute>
+                  <ChatConversationsPage />
                 </ProtectedRoute>
               } 
             />

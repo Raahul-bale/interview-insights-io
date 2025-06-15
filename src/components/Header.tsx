@@ -123,8 +123,15 @@ const Header = () => {
                    className="text-foreground hover:text-primary transition-colors"
                    data-tour="nav-ats"
                  >
-                   Resume ATS
-                 </Link>
+                    Resume ATS
+                  </Link>
+                  <Link 
+                    to="/conversations" 
+                    className="text-foreground hover:text-primary transition-colors"
+                    data-tour="nav-conversations"
+                  >
+                    My Chats
+                  </Link>
               </>
             )}
           </nav>
