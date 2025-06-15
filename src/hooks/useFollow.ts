@@ -112,7 +112,7 @@ export const useFollow = (targetUserId: string) => {
     if (!targetUserId) return;
 
     const channel = supabase
-      .channel(`profile-${targetUserId}`)
+      .channel(`profile-follower-count-${targetUserId}`)
       .on(
         'postgres_changes',
         {

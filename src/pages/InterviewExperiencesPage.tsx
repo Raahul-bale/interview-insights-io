@@ -333,7 +333,7 @@ const InterviewExperiencesPage = () => {
                                 day: 'numeric' 
                               })}
                             </span>
-                            {experience.user_id ? (
+                            {experience.user_id && experience.user_id.trim() !== '' ? (
                               <FollowButton 
                                 targetUserId={experience.user_id} 
                                 size="sm"

@@ -19,7 +19,17 @@ const FollowButton = ({
   className = ""
 }: FollowButtonProps) => {
   const { user } = useAuth();
-  const { isFollowing, followerCount, loading, toggleFollow } = useFollow(targetUserId);
+  
+  // Add error handling for the hook
+  let hookResult;
+  try {
+    hookResult = useFollow(targetUserId);
+  } catch (error) {
+    console.error('Error in useFollow hook:', error);
+    return null; // Return null if there's an error to prevent crash
+  }
+  
+  const { isFollowing, followerCount, loading, toggleFollow } = hookResult;
 
   // Don't show follow button for own profile, but show follower count
   if (user?.id === targetUserId) {
