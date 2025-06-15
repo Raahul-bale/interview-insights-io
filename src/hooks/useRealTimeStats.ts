@@ -86,9 +86,10 @@ export const useRealTimeStats = () => {
   useEffect(() => {
     fetchStats();
 
-    // Set up real-time subscriptions
+    // Set up real-time subscriptions with unique channel names
+    const uniqueId = Math.random().toString(36).substr(2, 9);
     const experiencesChannel = supabase
-      .channel('stats-experiences')
+      .channel(`stats-experiences-${uniqueId}`)
       .on(
         'postgres_changes',
         {
@@ -104,7 +105,7 @@ export const useRealTimeStats = () => {
       .subscribe();
 
     const profilesChannel = supabase
-      .channel('stats-profiles')
+      .channel(`stats-profiles-${uniqueId}`)
       .on(
         'postgres_changes',
         {

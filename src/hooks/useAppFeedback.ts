@@ -40,9 +40,10 @@ export const useAppFeedback = () => {
   useEffect(() => {
     fetchFeedback();
 
-    // Set up real-time subscription for app feedback
+    // Set up real-time subscription for app feedback with unique channel name
+    const channelName = `app-feedback-changes-${Math.random().toString(36).substr(2, 9)}`;
     const channel = supabase
-      .channel('app-feedback-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
