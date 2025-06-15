@@ -44,6 +44,12 @@ const HomePage = () => {
   const { user, signIn, signUp } = useAuth();
   const { toast } = useToast();
   
+  // User profile state
+  const [userProfile, setUserProfile] = useState<{
+    full_name?: string;
+    avatar_url?: string;
+  }>({});
+  
   // Animation states
   const [isVisible, setIsVisible] = useState(false);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -70,6 +76,29 @@ const HomePage = () => {
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  // Fetch user profile data
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user) return;
+      
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('full_name, avatar_url')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (data) {
+          setUserProfile(data);
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
 
   // Auto-rotate testimonials
   useEffect(() => {
@@ -155,6 +184,10 @@ const HomePage = () => {
     setIsLoading(false);
   };
 
+  const getDisplayName = () => {
+    return userProfile.full_name || user?.email?.split('@')[0] || 'User';
+  };
+
   const features = [
     {
       icon: <Brain className="h-8 w-8" />,
@@ -225,7 +258,7 @@ const HomePage = () => {
             <div className={`text-center transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <div className="inline-flex items-center bg-white/10 rounded-full px-4 py-2 mb-6">
                 <Sparkles className="h-4 w-4 mr-2" />
-                <span className="text-sm">Welcome back, {user.email?.split('@')[0]}!</span>
+                <span className="text-sm">Welcome back, {getDisplayName()}!</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
                 Your Interview Prep Dashboard
