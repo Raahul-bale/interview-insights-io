@@ -80,7 +80,7 @@ const StarRating = ({
 
   return (
     <TooltipProvider>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" data-tour="star-rating">
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="flex items-center">

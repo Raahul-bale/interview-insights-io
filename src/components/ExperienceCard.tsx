@@ -59,6 +59,7 @@ const ExperienceCard = ({
     <Card 
       className="hover:shadow-lg transition-shadow duration-300 border border-border cursor-pointer" 
       onClick={handleCardClick}
+      data-tour="experience-card"
     >
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">

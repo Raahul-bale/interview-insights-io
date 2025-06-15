@@ -278,7 +278,7 @@ const HomePage = () => {
             </div>
             
             <Tabs defaultValue="top-experiences" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-8">
+              <TabsList className="grid w-full grid-cols-4 mb-8" data-tour="experience-tabs">
                 <TabsTrigger value="top-experiences" className="flex items-center gap-2">
                   <Award className="w-4 h-4" />
                   Top Rated
@@ -306,9 +306,11 @@ const HomePage = () => {
                 <SearchExperiences />
               </TabsContent>
               <TabsContent value="advanced" className="space-y-6">
-                <AdvancedFilters 
-                  onFiltersChange={setFilters}
-                />
+                <div data-tour="advanced-filters">
+                  <AdvancedFilters 
+                    onFiltersChange={setFilters}
+                  />
+                </div>
                 <div className="flex items-center gap-4 mb-4">
                   <span className="text-sm font-medium">Sort by:</span>
                   <Select value={sortBy} onValueChange={(value: 'rating' | 'recent' | 'upvotes') => setSortBy(value)}>

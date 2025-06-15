@@ -14,6 +14,7 @@ import { User, LogOut, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "./ThemeToggle";
+import TourButton from "./TourButton";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -77,7 +78,7 @@ const Header = () => {
     <header className="bg-card border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-primary">
+          <Link to="/" className="text-2xl font-bold text-primary" data-tour="header-logo">
             Interview Insights
           </Link>
           
@@ -85,6 +86,7 @@ const Header = () => {
             <Link 
               to="/" 
               className="text-foreground hover:text-primary transition-colors"
+              data-tour="nav-home"
             >
               Home
             </Link>
@@ -93,12 +95,14 @@ const Header = () => {
                 <Link 
                   to="/submit" 
                   className="text-foreground hover:text-primary transition-colors"
+                  data-tour="nav-submit"
                 >
                   Share Experience
                 </Link>
                 <Link 
                   to="/chat" 
                   className="text-foreground hover:text-primary transition-colors"
+                  data-tour="nav-chat"
                 >
                   AI Prep Chat
                 </Link>
@@ -107,11 +111,15 @@ const Header = () => {
           </nav>
 
           <div className="flex items-center space-x-3">
-            <ThemeToggle />
+            <TourButton />
+            <div data-tour="theme-toggle">
+              <ThemeToggle />
+            </div>
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+              <div data-tour="user-menu">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
                       {userProfile.avatar_url && (
                         <AvatarImage src={userProfile.avatar_url} alt="Profile picture" />
@@ -147,8 +155,9 @@ const Header = () => {
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Sign out</span>
                   </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ) : (
               <>
                 <Link to="/auth">

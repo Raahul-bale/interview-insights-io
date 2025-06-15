@@ -74,6 +74,7 @@ const UpvoteButton = ({
       className={`flex items-center gap-1 ${hasUpvoted ? 'text-primary' : 'text-muted-foreground'}`}
       onClick={handleUpvote}
       disabled={isSubmitting}
+      data-tour="upvote-button"
     >
       <ThumbsUp className={`w-4 h-4 ${hasUpvoted ? 'fill-current' : ''}`} />
       <span className="text-sm">{displayCount}</span>

@@ -70,6 +70,7 @@ const SearchExperiences = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
             className="pl-10"
+            data-tour="search-box"
           />
         </div>
         <Button onClick={handleSearch} disabled={isSearching || !searchQuery.trim()}>

@@ -13,6 +13,7 @@ import ExperienceDetailPage from "./pages/ExperienceDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import TourOverlay from "./components/TourOverlay";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <TourOverlay />
           <BrowserRouter>
           <Routes>
             <Route path="/" element={<HomePage />} />
