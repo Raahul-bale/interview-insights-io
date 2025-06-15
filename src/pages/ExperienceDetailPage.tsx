@@ -4,9 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, Star, ThumbsUp, Calendar, User, Building2, Briefcase, Clock, ChevronRight, Linkedin, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
 import Header from "@/components/Header";
 import StarRating from "@/components/StarRating";
 import UpvoteButton from "@/components/UpvoteButton";
@@ -43,6 +45,7 @@ const ExperienceDetailPage = () => {
   const [relatedExperiences, setRelatedExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const [relatedLoading, setRelatedLoading] = useState(true);
+  const { profile } = useProfile(experience?.user_id || null);
 
   const fetchExperience = async () => {
     if (!id) return;
@@ -233,18 +236,39 @@ const ExperienceDetailPage = () => {
                     <CardTitle className="text-2xl break-words">
                       {experience.company} - {experience.role}
                     </CardTitle>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <User className="h-4 w-4 shrink-0" />
-                        <span className="break-words">By {experience.user_name}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4 shrink-0" />
-                        <span>{new Date(experience.date).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4 shrink-0" />
-                        <span>Shared {new Date(experience.created_at).toLocaleDateString()}</span>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage 
+                          src={profile?.avatar_url || undefined} 
+                          alt={experience.user_name}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="bg-muted">
+                          <User className="h-6 w-6" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <User className="h-4 w-4 shrink-0" />
+                            <span className="break-words font-medium">
+                              By {profile?.full_name || experience.user_name}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4 shrink-0" />
+                            <span>{new Date(experience.date).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4 shrink-0" />
+                            <span>Shared {new Date(experience.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        {profile?.bio && (
+                          <p className="text-sm text-muted-foreground">
+                            {profile.bio}
+                          </p>
+                        )}
                       </div>
                     </div>
                     {experience.linkedin_url && (
