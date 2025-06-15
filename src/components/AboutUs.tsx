@@ -3,9 +3,10 @@ import { Badge } from "@/components/ui/badge";
 import { Star } from "lucide-react";
 import { useAppFeedback } from "@/hooks/useAppFeedback";
 import { useRealTimeStats } from "@/hooks/useRealTimeStats";
+import AppFeedbackForm from "./AppFeedbackForm";
 
 const AboutUs = () => {
-  const { topFeedback, averageRating, loading: feedbackLoading } = useAppFeedback();
+  const { topFeedback, averageRating, loading: feedbackLoading, refetch } = useAppFeedback();
   const { stats, loading: statsLoading } = useRealTimeStats();
 
   return (
@@ -90,6 +91,11 @@ const AboutUs = () => {
               ))}
             </div>
           )}
+
+          {/* Feedback Submission Form */}
+          <div className="mt-8">
+            <AppFeedbackForm onSubmitted={refetch} />
+          </div>
         </div>
 
         {/* About Us Section */}
