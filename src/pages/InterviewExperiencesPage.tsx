@@ -268,7 +268,26 @@ const InterviewExperiencesPage = () => {
           ) : experiences.length > 0 ? (
             <div className="grid gap-6">
               {experiences.map(experience => (
-                <Card key={experience.id} className="hover:shadow-md transition-shadow">
+                <Card 
+                  key={experience.id} 
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => {
+                    if (!user) {
+                      toast({
+                        title: "Login Required",
+                        description: "Please login to view detailed interview experiences.",
+                        variant: "destructive",
+                        action: (
+                          <Button variant="outline" size="sm" asChild>
+                            <a href="/auth">Login</a>
+                          </Button>
+                        )
+                      });
+                      return;
+                    }
+                    // Handle navigation to experience detail if needed
+                  }}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
