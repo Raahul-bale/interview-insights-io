@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
@@ -41,6 +41,7 @@ interface ATSAnalysis {
 
 const ResumeATSPage = () => {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<ATSAnalysis | null>(null);
@@ -74,6 +75,10 @@ const ResumeATSPage = () => {
     setSelectedFile(file);
     setAnalysis(null);
   }, [toast]);
+
+  const handleChooseFile = () => {
+    fileInputRef.current?.click();
+  };
 
   const analyzeResume = async () => {
     if (!selectedFile) {
@@ -185,18 +190,21 @@ const ResumeATSPage = () => {
                 <CardContent className="space-y-4">
                   <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
                     <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <Label htmlFor="resume-upload" className="cursor-pointer">
-                      <Input
-                        id="resume-upload"
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                      />
-                      <Button variant="outline" className="mb-2">
-                        Choose File
-                      </Button>
-                    </Label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <Button 
+                      variant="outline" 
+                      className="mb-2"
+                      onClick={handleChooseFile}
+                      type="button"
+                    >
+                      Choose File
+                    </Button>
                     <p className="text-sm text-muted-foreground">
                       {selectedFile ? selectedFile.name : "No file selected"}
                     </p>
