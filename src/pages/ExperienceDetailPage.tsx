@@ -14,6 +14,7 @@ import AboutUs from "@/components/AboutUs";
 import StarRating from "@/components/StarRating";
 import UpvoteButton from "@/components/UpvoteButton";
 import CommentsSection from "@/components/CommentsSection";
+import FollowButton from "@/components/FollowButton";
 
 interface Round {
   type: string;
@@ -272,8 +273,8 @@ const ExperienceDetailPage = () => {
                         )}
                       </div>
                     </div>
-                    {experience.linkedin_url && (
-                      <div className="mt-2">
+                    <div className="mt-2 flex flex-wrap items-center gap-3">
+                      {experience.linkedin_url && (
                         <Button
                           asChild
                           size="sm"
@@ -290,8 +291,13 @@ const ExperienceDetailPage = () => {
                             <ExternalLink className="h-3 w-3" />
                           </a>
                         </Button>
-                      </div>
-                    )}
+                      )}
+                      <FollowButton 
+                        targetUserId={experience.user_id} 
+                        size="sm"
+                        showCount={true}
+                      />
+                    </div>
                   </div>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 lg:shrink-0">
                     <StarRating
