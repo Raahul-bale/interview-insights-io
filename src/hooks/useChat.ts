@@ -240,8 +240,11 @@ export const useChat = (experienceId?: string) => {
   useEffect(() => {
     if (!user) return;
 
+    // Create unique channel names to avoid conflicts when hook is used in multiple components
+    const channelId = Math.random().toString(36).substring(7);
+    
     const conversationsChannel = supabase
-      .channel('chat-conversations')
+      .channel(`chat-conversations-${channelId}`)
       .on(
         'postgres_changes',
         {
@@ -265,7 +268,7 @@ export const useChat = (experienceId?: string) => {
       .subscribe();
 
     const notificationsChannel = supabase
-      .channel('chat-notifications')
+      .channel(`chat-notifications-${channelId}`)
       .on(
         'postgres_changes',
         {
