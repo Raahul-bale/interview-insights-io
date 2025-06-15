@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import Header from "@/components/Header";
+import AboutUs from "@/components/AboutUs";
 import StarRating from "@/components/StarRating";
 import UpvoteButton from "@/components/UpvoteButton";
 import CommentsSection from "@/components/CommentsSection";
@@ -425,6 +426,8 @@ const ExperienceDetailPage = () => {
           </div>
         </div>
       </div>
+
+      <AboutUs />
     </div>
   );
 };

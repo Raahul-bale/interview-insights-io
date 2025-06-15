@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import AboutUs from "@/components/AboutUs";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -458,6 +459,8 @@ const ProfilePage = () => {
           </Card>
         </div>
       </div>
+
+      <AboutUs />
     </div>
   );
 };

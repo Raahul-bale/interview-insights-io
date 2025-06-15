@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import AppFeedbackForm from "@/components/AppFeedbackForm";
+import AboutUs from "@/components/AboutUs";
 
 interface Round {
   type: string;
@@ -26,6 +28,7 @@ const SubmitExperience = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const isEditing = Boolean(experienceId);
   
   const [formData, setFormData] = useState({
@@ -243,6 +246,9 @@ const SubmitExperience = () => {
           description: "Thank you for sharing your interview experience. It will help other students prepare better!",
         });
 
+        // Show feedback form after successful submission
+        setShowFeedbackForm(true);
+
         // Reset form
         setFormData({ name: "", company: "", role: "", date: "", outcome: "" });
         setRounds([{ type: "", questions: "", answers: "", experience: "", difficulty: "" }]);
@@ -259,6 +265,48 @@ const SubmitExperience = () => {
       setIsSubmitting(false);
     }
   };
+
+  // If showing feedback form, display that instead
+  if (showFeedbackForm) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-2xl mx-auto">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-foreground mb-4">
+                Thank You for Sharing!
+              </h1>
+              <p className="text-muted-foreground mb-8">
+                Your experience has been successfully shared. Now, help us improve the platform by rating your experience.
+              </p>
+            </div>
+
+            <AppFeedbackForm onSubmitted={() => {
+              toast({
+                title: "Thank you for your feedback!",
+                description: "Your feedback helps us improve the platform for everyone.",
+              });
+              navigate('/');
+            }} />
+
+            <div className="text-center mt-6">
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate('/')}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Skip and go to homepage
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <AboutUs />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -450,6 +498,8 @@ const SubmitExperience = () => {
           </Card>
         </div>
       </div>
+
+      <AboutUs />
     </div>
   );
 };

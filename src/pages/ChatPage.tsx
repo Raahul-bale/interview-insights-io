@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, FormEvent } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
+import AboutUs from "@/components/AboutUs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -345,6 +346,8 @@ const ChatPage = () => {
           </div>
         </div>
       </div>
+
+      <AboutUs />
     </div>
   );
 };

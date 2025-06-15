@@ -40,6 +40,7 @@ import {
   PlusCircle
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import AboutUs from "@/components/AboutUs";
 
 const HomePage = () => {
   const { user, signIn, signUp } = useAuth();
@@ -367,6 +368,9 @@ const HomePage = () => {
             </Tabs>
           </div>
         </section>
+
+        {/* About Us Section */}
+        <AboutUs />
       </div>
     );
   }
@@ -766,6 +770,9 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* About Us Section */}
+      <AboutUs />
     </div>
   );
 };

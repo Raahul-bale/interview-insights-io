@@ -233,6 +233,20 @@ export type Database = {
           topics: string[]
         }[]
       }
+      get_app_average_rating: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      get_top_app_feedback: {
+        Args: { limit_count?: number }
+        Returns: {
+          id: string
+          user_name: string
+          feedback: string
+          rating: number
+          created_at: string
+        }[]
+      }
       get_top_experiences: {
         Args: { limit_count?: number }
         Returns: {
