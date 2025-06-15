@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AboutUs from "@/components/AboutUs";
+import Footer from "@/components/Footer";
 
 const HomePage = () => {
   const { user, signIn, signUp } = useAuth();
@@ -338,9 +339,19 @@ const HomePage = () => {
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                 Explore Interview Experiences
               </h2>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-xl text-muted-foreground mb-4">
                 Discover top-rated experiences and search by company, role, or keywords
               </p>
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg p-6 max-w-3xl mx-auto">
+                <div className="flex items-center justify-center mb-3">
+                  <Users className="h-6 w-6 text-primary mr-2" />
+                  <h3 className="text-lg font-semibold text-foreground">Help Fellow Candidates Succeed!</h3>
+                </div>
+                <p className="text-muted-foreground text-center">
+                  Experienced professionals - your interview insights can make a huge difference for freshers starting their career journey. 
+                  Share your experiences to help the next generation of candidates prepare better and land their dream jobs.
+                </p>
+              </div>
             </div>
             
             <Tabs defaultValue="top-experiences" className="w-full">
@@ -402,6 +413,8 @@ const HomePage = () => {
         {/* About Us Section */}
         <AboutUs />
         </main>
+        
+        <Footer />
       </div>
     );
   }
@@ -487,9 +500,19 @@ const HomePage = () => {
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Real Interview Experiences
             </h2>
-            <p className="text-xl text-muted-foreground">
-              See what top-rated experiences look like from candidates at leading companies
-            </p>
+              <p className="text-xl text-muted-foreground mb-4">
+                See what top-rated experiences look like from candidates at leading companies
+              </p>
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 rounded-lg p-6 max-w-3xl mx-auto">
+                <div className="flex items-center justify-center mb-3">
+                  <Users className="h-6 w-6 text-primary mr-2" />
+                  <h3 className="text-lg font-semibold text-foreground">Experienced Professionals - Share Your Journey!</h3>
+                </div>
+                <p className="text-muted-foreground text-center">
+                  Your interview experiences are invaluable to freshers and junior professionals. Help them by sharing your stories, 
+                  tips, and insights. Every experience you share can guide someone toward their career breakthrough.
+                </p>
+              </div>
           </div>
           
           <div className="max-w-6xl mx-auto">
@@ -812,6 +835,8 @@ const HomePage = () => {
       {/* About Us Section */}
       <AboutUs />
       </main>
+      
+      <Footer />
     </div>
   );
 };

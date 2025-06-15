@@ -14,6 +14,7 @@ import AuthPage from "./pages/AuthPage";
 import ExperienceDetailPage from "./pages/ExperienceDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
+import TermsPage from "./pages/TermsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import TourOverlay from "./components/TourOverlay";
 
@@ -73,6 +74,7 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            <Route path="/terms" element={<TermsPage />} />
             {/* Redirect old routes to new auth page */}
             <Route path="/login" element={<AuthPage />} />
             <Route path="/signup" element={<AuthPage />} />

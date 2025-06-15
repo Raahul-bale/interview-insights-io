@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut, Mail, Edit } from "lucide-react";
+import { User, LogOut, Mail, Edit, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "./ThemeToggle";
@@ -81,9 +81,10 @@ const Header = () => {
       <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-primary" data-tour="header-logo">
-            Interview Insights
-          </Link>
+            <Link to="/" className="flex items-center space-x-2 text-2xl font-bold text-primary" data-tour="header-logo">
+              <BookOpen className="h-8 w-8" />
+              <span>Interview Insights</span>
+            </Link>
           
           <nav className="hidden md:flex items-center space-x-6">
             <Link 
