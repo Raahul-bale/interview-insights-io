@@ -236,15 +236,15 @@ const ExperienceDetailPage = () => {
                     <CardTitle className="text-2xl break-words">
                       {experience.company} - {experience.role}
                     </CardTitle>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-12 w-12">
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-20 w-20">
                         <AvatarImage 
                           src={profile?.avatar_url || undefined} 
                           alt={experience.user_name}
                           className="object-cover"
                         />
                         <AvatarFallback className="bg-muted">
-                          <User className="h-6 w-6" />
+                          <User className="h-10 w-10" />
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col gap-2">
