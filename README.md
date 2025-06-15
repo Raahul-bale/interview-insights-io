@@ -1,7 +1,7 @@
 
 ## Project info
 
-**URL**: https://interview-insights-2owz5wzc7-raahuls-projects-f9ec9d53.vercel.app/
+**URL**:https://interview-insights-io.vercel.app/
 
 ## How can I edit this code?
 
