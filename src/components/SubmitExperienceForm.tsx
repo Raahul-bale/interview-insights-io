@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star } from "lucide-react";
+import { Star, Plus } from "lucide-react";
 
 interface Props {
   onSuccess: () => void;
@@ -19,48 +19,63 @@ const SubmitExperienceForm = ({ onSuccess }: Props) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    company_name: "",
-    position: "",
-    interview_type: "",
-    experience_level: "",
-    overall_rating: 0,
-    difficulty_rating: 0,
-    title: "",
-    description: "",
-    interview_process: "",
-    questions_asked: "",
-    tips: "",
-    outcome: "",
-    interview_date: ""
+    company: "",
+    role: "",
+    user_name: "",
+    date: "",
+    rounds: [
+      {
+        type: "",
+        difficulty: "",
+        questions: "",
+        approach: "",
+        experience: ""
+      }
+    ],
+    full_text: ""
   });
 
-  const interviewTypes = [
-    { value: "coding", label: "Coding Round" },
+  const roundTypes = [
+    { value: "coding-round", label: "Coding Round" },
     { value: "behavioral", label: "Behavioral Interview" },
-    { value: "system design", label: "System Design" },
+    { value: "system-design", label: "System Design" },
     { value: "technical", label: "Technical Interview" },
-    { value: "phone screening", label: "Phone Screening" },
+    { value: "phone-screening", label: "Phone Screening" },
     { value: "onsite", label: "Onsite Interview" }
   ];
 
-  const experienceLevels = [
-    { value: "entry", label: "Entry Level" },
-    { value: "mid", label: "Mid Level" },
-    { value: "senior", label: "Senior Level" },
-    { value: "lead", label: "Lead Level" },
-    { value: "principal", label: "Principal Level" }
+  const difficulties = [
+    { value: "easy", label: "Easy" },
+    { value: "medium", label: "Medium" },
+    { value: "hard", label: "Hard" }
   ];
 
-  const outcomes = [
-    { value: "offered", label: "Offered" },
-    { value: "rejected", label: "Rejected" },
-    { value: "pending", label: "Pending" }
-  ];
-
-  const handleInputChange = (field: string, value: string | number) => {
+  const handleInputChange = (field: string, value: string | any[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
+    }));
+  };
+
+  const addRound = () => {
+    setFormData(prev => ({
+      ...prev,
+      rounds: [...prev.rounds, {
+        type: "",
+        difficulty: "",
+        questions: "",
+        approach: "",
+        experience: ""
+      }]
+    }));
+  };
+
+  const updateRound = (index: number, field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      rounds: prev.rounds.map((round, i) => 
+        i === index ? { ...round, [field]: value } : round
+      )
     }));
   };
 
@@ -77,9 +92,8 @@ const SubmitExperienceForm = ({ onSuccess }: Props) => {
     }
 
     // Validate required fields
-    if (!formData.company_name || !formData.position || !formData.interview_type || 
-        !formData.experience_level || !formData.title || !formData.description ||
-        formData.overall_rating === 0 || formData.difficulty_rating === 0) {
+    if (!formData.company || !formData.role || !formData.user_name || 
+        !formData.date || !formData.full_text) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
@@ -91,22 +105,15 @@ const SubmitExperienceForm = ({ onSuccess }: Props) => {
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('interview_experiences')
+        .from('interview_posts')
         .insert({
           user_id: user.id,
-          company_name: formData.company_name.trim(),
-          position: formData.position.trim(),
-          interview_type: formData.interview_type,
-          experience_level: formData.experience_level,
-          overall_rating: formData.overall_rating,
-          difficulty_rating: formData.difficulty_rating,
-          title: formData.title.trim(),
-          description: formData.description.trim(),
-          interview_process: formData.interview_process.trim() || null,
-          questions_asked: formData.questions_asked.trim() || null,
-          tips: formData.tips.trim() || null,
-          outcome: formData.outcome || null,
-          interview_date: formData.interview_date || null
+          company: formData.company.trim(),
+          role: formData.role.trim(),
+          user_name: formData.user_name.trim(),
+          date: formData.date,
+          rounds: formData.rounds.filter(round => round.type && round.questions),
+          full_text: formData.full_text.trim()
         });
 
       if (error) throw error;
@@ -124,183 +131,154 @@ const SubmitExperienceForm = ({ onSuccess }: Props) => {
     }
   };
 
-  const StarRating = ({ value, onChange, label }: { value: number; onChange: (rating: number) => void; label: string }) => (
-    <div className="space-y-2">
-      <Label>{label} *</Label>
-      <div className="flex items-center space-x-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            type="button"
-            onClick={() => onChange(star)}
-            className={`p-1 rounded ${star <= value ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-400'}`}
-          >
-            <Star className={`h-6 w-6 ${star <= value ? 'fill-current' : ''}`} />
-          </button>
-        ))}
-        <span className="ml-2 text-sm text-muted-foreground">
-          {value > 0 ? `${value}/5` : 'Select rating'}
-        </span>
-      </div>
-    </div>
-  );
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="company_name">Company Name *</Label>
+          <Label htmlFor="user_name">Your Name *</Label>
           <Input
-            id="company_name"
+            id="user_name"
+            placeholder="e.g., John Doe"
+            value={formData.user_name}
+            onChange={(e) => handleInputChange('user_name', e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="company">Company *</Label>
+          <Input
+            id="company"
             placeholder="e.g., Google, Microsoft, Apple"
-            value={formData.company_name}
-            onChange={(e) => handleInputChange('company_name', e.target.value)}
+            value={formData.company}
+            onChange={(e) => handleInputChange('company', e.target.value)}
             required
           />
         </div>
+      </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="position">Position *</Label>
+          <Label htmlFor="role">Role *</Label>
           <Input
-            id="position"
+            id="role"
             placeholder="e.g., Software Engineer, Product Manager"
-            value={formData.position}
-            onChange={(e) => handleInputChange('position', e.target.value)}
+            value={formData.role}
+            onChange={(e) => handleInputChange('role', e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="date">Interview Date *</Label>
+          <Input
+            id="date"
+            type="date"
+            value={formData.date}
+            onChange={(e) => handleInputChange('date', e.target.value)}
             required
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Interview Type *</Label>
-          <Select value={formData.interview_type} onValueChange={(value) => handleInputChange('interview_type', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select interview type" />
-            </SelectTrigger>
-            <SelectContent>
-              {interviewTypes.map(type => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label>Interview Rounds</Label>
+          <Button type="button" onClick={addRound} variant="outline" size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Round
+          </Button>
         </div>
 
-        <div className="space-y-2">
-          <Label>Experience Level *</Label>
-          <Select value={formData.experience_level} onValueChange={(value) => handleInputChange('experience_level', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select experience level" />
-            </SelectTrigger>
-            <SelectContent>
-              {experienceLevels.map(level => (
-                <SelectItem key={level.value} value={level.value}>
-                  {level.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {formData.rounds.map((round, index) => (
+          <Card key={index} className="p-4">
+            <div className="space-y-4">
+              <h4 className="font-medium">Round {index + 1}</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Round Type</Label>
+                  <Select 
+                    value={round.type} 
+                    onValueChange={(value) => updateRound(index, 'type', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roundTypes.map(type => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Difficulty</Label>
+                  <Select 
+                    value={round.difficulty} 
+                    onValueChange={(value) => updateRound(index, 'difficulty', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select difficulty" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {difficulties.map(diff => (
+                        <SelectItem key={diff.value} value={diff.value}>
+                          {diff.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Questions Asked *</Label>
+                <Textarea
+                  placeholder="What questions were asked in this round?"
+                  value={round.questions}
+                  onChange={(e) => updateRound(index, 'questions', e.target.value)}
+                  rows={2}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Your Answers & Approach *</Label>
+                <Textarea
+                  placeholder="How did you answer? What was your approach? Any tips..."
+                  value={round.approach}
+                  onChange={(e) => updateRound(index, 'approach', e.target.value)}
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Overall Experience & Additional Tips *</Label>
+                <Textarea
+                  placeholder="Share your overall experience for this round, any additional tips, preparation advice, or insights that might help others..."
+                  value={round.experience}
+                  onChange={(e) => updateRound(index, 'experience', e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </div>
+          </Card>
+        ))}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="title">Experience Title *</Label>
-        <Input
-          id="title"
-          placeholder="e.g., Google Software Engineer Coding Round Experience"
-          value={formData.title}
-          onChange={(e) => handleInputChange('title', e.target.value)}
-          required
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <StarRating
-          value={formData.overall_rating}
-          onChange={(rating) => handleInputChange('overall_rating', rating)}
-          label="Overall Experience Rating"
-        />
-
-        <StarRating
-          value={formData.difficulty_rating}
-          onChange={(rating) => handleInputChange('difficulty_rating', rating)}
-          label="Difficulty Rating"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="description">Experience Description *</Label>
+        <Label htmlFor="full_text">Overall Experience Summary *</Label>
         <Textarea
-          id="description"
-          placeholder="Describe your overall interview experience, what went well, what was challenging..."
-          value={formData.description}
-          onChange={(e) => handleInputChange('description', e.target.value)}
+          id="full_text"
+          placeholder="Provide a comprehensive summary of your entire interview experience..."
+          value={formData.full_text}
+          onChange={(e) => handleInputChange('full_text', e.target.value)}
           rows={4}
           required
         />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="interview_process">Interview Process (Optional)</Label>
-        <Textarea
-          id="interview_process"
-          placeholder="Describe the overall interview process, timeline, number of rounds..."
-          value={formData.interview_process}
-          onChange={(e) => handleInputChange('interview_process', e.target.value)}
-          rows={3}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="questions_asked">Questions Asked (Optional)</Label>
-        <Textarea
-          id="questions_asked"
-          placeholder="Share the specific questions or types of questions you encountered..."
-          value={formData.questions_asked}
-          onChange={(e) => handleInputChange('questions_asked', e.target.value)}
-          rows={3}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="tips">Tips & Advice (Optional)</Label>
-        <Textarea
-          id="tips"
-          placeholder="Share any tips or advice for future candidates..."
-          value={formData.tips}
-          onChange={(e) => handleInputChange('tips', e.target.value)}
-          rows={3}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Outcome (Optional)</Label>
-          <Select value={formData.outcome} onValueChange={(value) => handleInputChange('outcome', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select outcome" />
-            </SelectTrigger>
-            <SelectContent>
-              {outcomes.map(outcome => (
-                <SelectItem key={outcome.value} value={outcome.value}>
-                  {outcome.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="interview_date">Interview Date (Optional)</Label>
-          <Input
-            id="interview_date"
-            type="date"
-            value={formData.interview_date}
-            onChange={(e) => handleInputChange('interview_date', e.target.value)}
-          />
-        </div>
       </div>
 
       <Card className="bg-muted/50">
