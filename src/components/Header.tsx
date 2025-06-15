@@ -103,13 +103,20 @@ const Header = () => {
                 >
                   Share Experience
                 </Link>
-                <Link 
-                  to="/chat" 
-                  className="text-foreground hover:text-primary transition-colors"
-                  data-tour="nav-chat"
-                >
-                  AI Prep Chat
-                </Link>
+                 <Link 
+                   to="/chat" 
+                   className="text-foreground hover:text-primary transition-colors"
+                   data-tour="nav-chat"
+                 >
+                   AI Prep Chat
+                 </Link>
+                 <Link 
+                   to="/resume-ats" 
+                   className="text-foreground hover:text-primary transition-colors"
+                   data-tour="nav-ats"
+                 >
+                   Resume ATS
+                 </Link>
               </>
             )}
           </nav>

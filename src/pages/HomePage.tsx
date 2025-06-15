@@ -201,16 +201,16 @@ const HomePage = () => {
       gradient: "from-blue-500 to-cyan-500"
     },
     {
+      icon: <FileText className="h-8 w-8" />,
+      title: "Resume ATS Optimizer",
+      description: "Optimize your resume for Applicant Tracking Systems with AI-powered analysis and suggestions.",
+      gradient: "from-green-500 to-emerald-500"
+    },
+    {
       icon: <Users className="h-8 w-8" />,
       title: "Community Driven",
       description: "Learn from real interview experiences shared by candidates from top companies.",
       gradient: "from-purple-500 to-pink-500"
-    },
-    {
-      icon: <TrendingUp className="h-8 w-8" />,
-      title: "Track Your Progress",
-      description: "Monitor your preparation journey and see how you're improving over time.",
-      gradient: "from-green-500 to-emerald-500"
     },
     {
       icon: <Shield className="h-8 w-8" />,
@@ -300,20 +300,26 @@ const HomePage = () => {
               <p className="text-xl mb-8 text-primary-foreground/90 max-w-2xl mx-auto">
                 Continue your journey to interview success with AI-powered insights and community experiences.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/chat">
-                  <Button size="lg" variant="secondary" className="hover-scale">
-                    <MessageSquare className="mr-2 h-5 w-5" />
-                    AI Prep Chat
-                  </Button>
-                </Link>
-                <Link to="/submit">
-                  <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-primary hover-scale">
-                    <FileText className="mr-2 h-5 w-5" />
-                    Share Experience
-                  </Button>
-                </Link>
-              </div>
+               <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                 <Link to="/chat">
+                   <Button size="lg" variant="secondary" className="hover-scale">
+                     <MessageSquare className="mr-2 h-5 w-5" />
+                     AI Prep Chat
+                   </Button>
+                 </Link>
+                 <Link to="/resume-ats">
+                   <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-primary hover-scale">
+                     <FileText className="mr-2 h-5 w-5" />
+                     Resume ATS Optimizer
+                   </Button>
+                 </Link>
+                 <Link to="/submit">
+                   <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-primary hover-scale">
+                     <FileText className="mr-2 h-5 w-5" />
+                     Share Experience
+                   </Button>
+                 </Link>
+               </div>
             </div>
           </div>
         </section>
@@ -468,14 +474,14 @@ const HomePage = () => {
       {/* Features Section */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-              Why Choose InterviewHub?
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to ace your next interview, powered by AI and real candidate experiences.
-            </p>
-          </div>
+           <div className="text-center mb-16">
+             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+               Why Choose Interview Insights?
+             </h2>
+             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+               Everything you need to ace your next interview - from resume optimization to AI-powered preparation and real candidate experiences.
+             </p>
+           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
@@ -819,16 +825,20 @@ const HomePage = () => {
           <p className="text-xl mb-8 text-primary-foreground/90 max-w-2xl mx-auto">
             Join thousands of successful candidates who've transformed their interview game with InterviewHub.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" className="hover-scale">
-              <Award className="mr-2 h-5 w-5" />
-              Start Free Today
-            </Button>
-            <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-primary hover-scale">
-              <BookOpen className="mr-2 h-5 w-5" />
-              Explore Features
-            </Button>
-          </div>
+           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+             <Link to="/auth">
+               <Button size="lg" variant="secondary" className="hover-scale">
+                 <Award className="mr-2 h-5 w-5" />
+                 Start Free Today
+               </Button>
+             </Link>
+             <Link to="/resume-ats">
+               <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-primary hover-scale">
+                 <FileText className="mr-2 h-5 w-5" />
+                 Try Resume ATS
+               </Button>
+             </Link>
+           </div>
         </div>
       </section>
 

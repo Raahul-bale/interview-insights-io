@@ -15,6 +15,7 @@ import ExperienceDetailPage from "./pages/ExperienceDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import TermsPage from "./pages/TermsPage";
+import ResumeATSPage from "./pages/ResumeATSPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import TourOverlay from "./components/TourOverlay";
 
@@ -71,6 +72,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/resume-ats" 
+              element={
+                <ProtectedRoute>
+                  <ResumeATSPage />
                 </ProtectedRoute>
               } 
             />
