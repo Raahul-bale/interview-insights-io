@@ -47,6 +47,15 @@ const TOUR_STEPS: TourStep[] = [
     showSkip: true
   },
   {
+    target: '[data-tour="nav-conversations"]',
+    title: 'My Chat Conversations 💬',
+    content: 'Manage all your chat conversations with experience authors. Accept, decline, or view chat requests here.',
+    placement: 'bottom',
+    showNext: true,
+    showPrev: true,
+    showSkip: true
+  },
+  {
     target: '[data-tour="theme-toggle"]',
     title: 'Theme Toggle 🌓',
     content: 'Switch between light and dark themes to match your preference and reduce eye strain.',
@@ -83,6 +92,15 @@ const TOUR_STEPS: TourStep[] = [
     showSkip: true
   },
   {
+    target: '[data-tour="chat-widget"]',
+    title: 'Chat with Authors 💬',
+    content: 'Connect directly with experience authors! Send chat requests to ask questions about their interview experience.',
+    placement: 'left',
+    showNext: true,
+    showPrev: true,
+    showSkip: true
+  },
+  {
     target: '[data-tour="upvote-button"]',
     title: 'Upvote System 👍',
     content: 'Upvote helpful experiences to help others find the most valuable content. Your upvotes improve the community.',
@@ -114,6 +132,33 @@ const TOUR_STEPS: TourStep[] = [
     title: 'Advanced Filters 🔧',
     content: 'Filter experiences by company, role, experience level, interview difficulty, and more for targeted preparation.',
     placement: 'bottom',
+    showNext: true,
+    showPrev: true,
+    showSkip: true
+  },
+  {
+    target: '[data-tour="chat-conversations"]',
+    title: 'Chat Management 💬',
+    content: 'View all your chat conversations in one place. See pending requests, active chats, and manage your communications.',
+    placement: 'bottom',
+    showNext: true,
+    showPrev: true,
+    showSkip: true
+  },
+  {
+    target: '[data-tour="chat-actions"]',
+    title: 'Chat Request Actions ✅',
+    content: 'When you receive chat requests, you can Accept to start chatting, Decline politely, or Block users if needed.',
+    placement: 'top',
+    showNext: true,
+    showPrev: true,
+    showSkip: true
+  },
+  {
+    target: '[data-tour="blocked-users"]',
+    title: 'Blocked Users Management 🛡️',
+    content: 'Manage users you\'ve blocked from sending chat requests. You can unblock them anytime from your profile page.',
+    placement: 'top',
     showNext: true,
     showPrev: true,
     showSkip: true

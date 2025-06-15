@@ -108,7 +108,7 @@ const BlockedUsers = ({ experiences, onBlockedUsersChange }: BlockedUsersProps) 
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-tour="blocked-users">
       <div className="flex items-center gap-2">
         <Shield className="h-5 w-5 text-muted-foreground" />
         <h3 className="text-lg font-semibold">Blocked Users</h3>

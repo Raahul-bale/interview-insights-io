@@ -180,7 +180,7 @@ const ChatConversationsPage = () => {
 
               {/* Show action buttons for pending conversations where current user is the experience owner */}
               {conversation.status === 'pending' && conversation.experience_owner_id === user?.id && (
-                <div className="flex gap-2 mt-3">
+                <div className="flex gap-2 mt-3" data-tour="chat-actions">
                   <Button 
                     onClick={handleAccept} 
                     size="sm" 
@@ -235,7 +235,7 @@ const ChatConversationsPage = () => {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center gap-3 mb-8" data-tour="chat-conversations">
               <MessageCircle className="h-8 w-8 text-primary" />
               <h1 className="text-3xl font-bold">My Chat Conversations</h1>
             </div>

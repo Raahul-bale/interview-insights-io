@@ -290,7 +290,7 @@ const ChatWidget = ({ experienceId, experienceOwnerId, experienceOwnerName }: Ch
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full">
+        <Button variant="outline" className="w-full" data-tour="chat-widget">
           <MessageCircle className="h-4 w-4 mr-2" />
           Chat with Author
           {conversation?.status === 'pending' && (
