@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageCircle, User, Clock } from 'lucide-react';
+import { MessageCircle, User, Clock, Check, X, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChat } from '@/hooks/useChat';
 import { useProfile } from '@/hooks/useProfile';
@@ -33,7 +34,7 @@ interface ConversationWithDetails {
 const ChatConversationsPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { fetchConversations, conversations } = useChat();
+  const { fetchConversations, conversations, updateConversationStatus } = useChat();
   const [conversationsWithDetails, setConversationsWithDetails] = useState<ConversationWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -56,7 +57,6 @@ const ChatConversationsPage = () => {
           interview_posts(company, role)
         `)
         .or(`requester_id.eq.${user?.id},experience_owner_id.eq.${user?.id}`)
-        .neq('status', 'declined')
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
@@ -115,6 +115,24 @@ const ChatConversationsPage = () => {
       }
     };
 
+    const handleAccept = async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      await updateConversationStatus(conversation.id, 'accepted');
+      loadConversations();
+    };
+
+    const handleDecline = async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      await updateConversationStatus(conversation.id, 'declined');
+      loadConversations();
+    };
+
+    const handleBlock = async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      await updateConversationStatus(conversation.id, 'blocked');
+      loadConversations();
+    };
+
     return (
       <Card 
         className={`mb-4 transition-colors ${
@@ -159,6 +177,36 @@ const ChatConversationsPage = () => {
                   : new Date(conversation.created_at).toLocaleDateString()
                 }
               </div>
+
+              {/* Show action buttons for pending conversations where current user is the experience owner */}
+              {conversation.status === 'pending' && conversation.experience_owner_id === user?.id && (
+                <div className="flex gap-2 mt-3">
+                  <Button 
+                    onClick={handleAccept} 
+                    size="sm" 
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Check className="h-4 w-4 mr-1" />
+                    Accept
+                  </Button>
+                  <Button 
+                    onClick={handleDecline} 
+                    variant="outline" 
+                    size="sm"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Decline
+                  </Button>
+                  <Button 
+                    onClick={handleBlock} 
+                    variant="destructive" 
+                    size="sm"
+                  >
+                    <Shield className="h-4 w-4 mr-1" />
+                    Block
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
