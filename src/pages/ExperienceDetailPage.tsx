@@ -15,6 +15,7 @@ import StarRating from "@/components/StarRating";
 import UpvoteButton from "@/components/UpvoteButton";
 import CommentsSection from "@/components/CommentsSection";
 import FollowButton from "@/components/FollowButton";
+import ChatWidget from "@/components/ChatWidget";
 
 interface Round {
   type: string;
@@ -375,8 +376,21 @@ const ExperienceDetailPage = () => {
             <CommentsSection experienceId={experience.id} />
           </div>
 
-          {/* Sidebar - Related Experiences */}
+          {/* Sidebar - Chat and Related Experiences */}
           <div className="space-y-6">
+            {/* Chat Widget */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Connect with Author</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChatWidget
+                  experienceId={experience.id}
+                  experienceOwnerId={experience.user_id}
+                  experienceOwnerName={experience.user_name}
+                />
+              </CardContent>
+            </Card>
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Related Experiences</CardTitle>
