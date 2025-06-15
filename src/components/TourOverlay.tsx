@@ -23,10 +23,13 @@ const TourOverlay = () => {
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
 
   useEffect(() => {
+    console.log('TourOverlay effect - isActive:', isActive, 'currentStepData:', currentStepData);
     if (!isActive || !currentStepData) return;
 
     const findTarget = () => {
+      console.log('Looking for target:', currentStepData.target);
       const element = document.querySelector(currentStepData.target) as HTMLElement;
+      console.log('Found element:', element);
       if (element) {
         setTargetElement(element);
         
@@ -121,6 +124,7 @@ const TourOverlay = () => {
     };
   }, [isActive, currentStepData]);
 
+  console.log('TourOverlay render check - isActive:', isActive, 'currentStepData:', currentStepData, 'targetElement:', targetElement);
   if (!isActive || !currentStepData || !targetElement) return null;
 
   return (

@@ -13,8 +13,10 @@ const TourButton = () => {
   const { startTour, hasSeenTour } = useTour(user);
 
   const handleTourClick = () => {
+    console.log('Tour button clicked!');
     // Always start/restart the tour when clicked
     startTour();
+    console.log('startTour() called');
   };
 
   return (

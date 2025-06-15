@@ -140,8 +140,10 @@ export const useTour = (user?: any) => {
   }, [user]);
 
   const startTour = () => {
+    console.log('Starting tour...');
     setCurrentStep(0);
     setIsActive(true);
+    console.log('Tour state set - isActive: true, currentStep: 0');
   };
 
   const nextStep = () => {
