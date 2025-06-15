@@ -174,9 +174,13 @@ const ChatWidget = ({ experienceId, experienceOwnerId, experienceOwnerName }: Ch
         <div className="text-center py-8">
           <MessageCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
           <h3 className="text-lg font-semibold mb-2">Chat Request Declined</h3>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-4">
             The chat request was declined. You can send a new request if needed.
           </p>
+          <Button onClick={handleStartChat} disabled={loading}>
+            <MessageCircle className="h-4 w-4 mr-2" />
+            Send New Request
+          </Button>
         </div>
       );
     }

@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
+import BlockedUsers from "@/components/BlockedUsers";
 
 interface ProfileData {
   full_name: string;
@@ -601,6 +602,27 @@ const ProfilePage = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Blocked Users Management */}
+              {userExperiences.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl">Blocked Users Management</CardTitle>
+                    <p className="text-muted-foreground">
+                      Manage users you've blocked from sending chat requests to your experiences
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {userExperiences.map((experience) => (
+                      <BlockedUsers
+                        key={experience.id}
+                        experienceId={experience.id}
+                        experienceTitle={`${experience.company} - ${experience.role}`}
+                      />
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
           </Tabs>
         </div>
