@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import InterviewExperienceCard from "@/components/InterviewExperienceCard";
 import SubmitExperienceForm from "@/components/SubmitExperienceForm";
+import FollowButton from "@/components/FollowButton";
 
 interface InterviewPost {
   id: string;
@@ -38,6 +39,7 @@ interface InterviewPost {
   rating_count: number | null;
   upvote_count: number;
   created_at: string;
+  user_id?: string;
 }
 
 const InterviewExperiencesPage = () => {
@@ -326,6 +328,13 @@ const InterviewExperiencesPage = () => {
                                 day: 'numeric' 
                               })}
                             </span>
+                            {experience.user_id && (
+                              <FollowButton 
+                                targetUserId={experience.user_id} 
+                                size="sm"
+                                showCount={true}
+                              />
+                            )}
                           </div>
                           
                           <p className="text-muted-foreground leading-relaxed mb-6">
