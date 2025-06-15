@@ -120,7 +120,7 @@ const TOUR_STEPS: TourStep[] = [
   }
 ];
 
-export const useTour = () => {
+export const useTour = (user?: any) => {
   const [isActive, setIsActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [hasSeenTour, setHasSeenTour] = useState(false);
@@ -130,14 +130,14 @@ export const useTour = () => {
     const seenTour = tourCompleted === 'true';
     setHasSeenTour(seenTour);
     
-    // Auto-start tour for new users
-    if (!seenTour) {
+    // Auto-start tour for authenticated new users only
+    if (!seenTour && user) {
       const timer = setTimeout(() => {
         setIsActive(true);
       }, 2000); // 2 second delay
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [user]);
 
   const startTour = () => {
     setCurrentStep(0);

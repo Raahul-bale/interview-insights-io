@@ -3,8 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { X, ChevronLeft, ChevronRight, SkipForward } from 'lucide-react';
 import { useTour } from '@/hooks/useTour';
+import { useAuth } from '@/contexts/AuthContext';
 
 const TourOverlay = () => {
+  const { user } = useAuth();
   const { 
     isActive, 
     currentStepData, 
@@ -14,7 +16,7 @@ const TourOverlay = () => {
     prevStep, 
     skipTour,
     completeTour
-  } = useTour();
+  } = useTour(user);
   
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const [overlayStyle, setOverlayStyle] = useState<React.CSSProperties>({});

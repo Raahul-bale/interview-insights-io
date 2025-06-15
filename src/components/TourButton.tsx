@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { HelpCircle } from 'lucide-react';
 import { useTour } from '@/hooks/useTour';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Tooltip,
   TooltipContent,
@@ -8,7 +9,8 @@ import {
 } from '@/components/ui/tooltip';
 
 const TourButton = () => {
-  const { startTour, hasSeenTour } = useTour();
+  const { user } = useAuth();
+  const { startTour, hasSeenTour } = useTour(user);
 
   return (
     <Tooltip>
