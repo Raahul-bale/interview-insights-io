@@ -109,7 +109,14 @@ Please provide general ATS optimization advice since no specific job description
     if (!response.ok) {
       const errorData = await response.text();
       console.error('OpenAI API error:', errorData);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      
+      if (response.status === 429) {
+        throw new Error('OpenAI API quota exceeded. Please check your billing and usage limits.');
+      } else if (response.status === 401) {
+        throw new Error('OpenAI API key is invalid. Please check your API key.');
+      } else {
+        throw new Error(`OpenAI API error: ${response.status} - ${errorData}`);
+      }
     }
 
     const data = await response.json();
