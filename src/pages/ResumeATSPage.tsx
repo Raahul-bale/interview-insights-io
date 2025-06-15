@@ -178,9 +178,9 @@ const ResumeATSPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO 
-        title="Resume ATS Optimizer - Interview Insights"
-        description="Optimize your resume for Applicant Tracking Systems (ATS). Get detailed analysis, keyword suggestions, and formatting recommendations to increase your chances of getting noticed by recruiters."
-        keywords="resume ATS, applicant tracking system, resume optimization, keyword analysis, resume scanner, ATS friendly resume"
+        title="Resume ATS Optimizer - Coming Soon | Interview Insights"
+        description="Our comprehensive ATS optimization tool is launching soon. Get ready to optimize your resume for Applicant Tracking Systems with AI-powered analysis and recommendations."
+        keywords="resume ATS, applicant tracking system, resume optimization, keyword analysis, resume scanner, ATS friendly resume, coming soon"
       />
       <Header />
       
@@ -188,266 +188,44 @@ const ResumeATSPage = () => {
         <div className="container mx-auto px-4 max-w-6xl">
           {/* Hero Section */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center bg-primary/10 rounded-full px-4 py-2 mb-6">
-              <Zap className="h-4 w-4 mr-2 text-primary" />
-              <span className="text-sm font-medium">Free ATS Analysis</span>
+            <div className="inline-flex items-center bg-yellow-100 text-yellow-800 rounded-full px-4 py-2 mb-6">
+              <Zap className="h-4 w-4 mr-2" />
+              <span className="text-sm font-medium">Coming Soon</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               Resume ATS Optimizer
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Boost your chances of getting past Applicant Tracking Systems with our free, comprehensive resume analysis and optimization tool.
+              Our comprehensive resume analysis and optimization tool will be launched soon. Get ready to boost your chances of getting past Applicant Tracking Systems.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Upload Section */}
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Upload className="mr-2 h-5 w-5" />
-                    Upload Your Resume
-                  </CardTitle>
-                  <CardDescription>
-                    Upload your resume in PDF, DOC, or DOCX format (max 5MB)
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                    <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                    <Button 
-                      variant="outline" 
-                      className="mb-2"
-                      onClick={handleChooseFile}
-                      type="button"
-                    >
-                      Choose File
-                    </Button>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedFile ? selectedFile.name : "No file selected"}
-                    </p>
-                  </div>
-                  
-                  {selectedFile && (
-                    <Alert>
-                      <CheckCircle className="h-4 w-4" />
-                      <AlertDescription>
-                        File uploaded successfully: {selectedFile.name}
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Job Description Input */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Target className="mr-2 h-5 w-5" />
-                    Job Description (Optional)
-                  </CardTitle>
-                  <CardDescription>
-                    Paste the job description to get targeted keyword analysis
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
-                    placeholder="Paste the job description here to get targeted analysis based on specific job requirements, skills, and qualifications..."
-                    value={jobDescription}
-                    onChange={(e) => setJobDescription(e.target.value)}
-                    rows={6}
-                  />
-                  {jobDescription.trim() && (
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      Job description provided - analysis will be tailored to this role
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Button 
-                onClick={analyzeResume} 
-                disabled={!selectedFile || isAnalyzing}
-                className="w-full"
-                size="lg"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Analyzing Resume...
-                  </>
-                ) : (
-                  <>
-                    <Eye className="mr-2 h-4 w-4" />
-                    Analyze Resume
-                  </>
-                )}
-              </Button>
-            </div>
-
-            {/* Results Section */}
-            <div className="space-y-6">
-              {analysis ? (
-                <>
-                  {/* Overall Score */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <Award className="mr-2 h-5 w-5" />
-                        ATS Compatibility Score
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-center mb-4">
-                        <div className={`text-4xl font-bold ${getScoreColor(analysis.overallScore)}`}>
-                          {analysis.overallScore}%
-                        </div>
-                        <p className="text-muted-foreground">Overall ATS Compatibility</p>
-                      </div>
-                      <Progress 
-                        value={analysis.overallScore} 
-                        className="h-2 mb-4" 
-                      />
-                      
-                      {/* Detailed Scores */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="text-center">
-                          <div className={`text-lg font-semibold ${getScoreColor(analysis.keywordMatch)}`}>
-                            {analysis.keywordMatch}%
-                          </div>
-                          <p className="text-xs text-muted-foreground">Keyword Match</p>
-                        </div>
-                        <div className="text-center">
-                          <div className={`text-lg font-semibold ${getScoreColor(analysis.formatScore)}`}>
-                            {analysis.formatScore}%
-                          </div>
-                          <p className="text-xs text-muted-foreground">Format Score</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Keywords Analysis */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <TrendingUp className="mr-2 h-5 w-5" />
-                        Keyword Analysis
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <Label className="text-sm font-medium text-green-600 mb-2 block">
-                          Found Keywords ({analysis.keywords.found.length})
-                        </Label>
-                        <div className="flex flex-wrap gap-2">
-                          {analysis.keywords.found.map((keyword, index) => (
-                            <Badge key={index} variant="secondary" className="bg-green-100 text-green-800">
-                              {keyword}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <Label className="text-sm font-medium text-red-600 mb-2 block">
-                          Missing Keywords ({analysis.keywords.missing.length})
-                        </Label>
-                        <div className="flex flex-wrap gap-2">
-                          {analysis.keywords.missing.map((keyword, index) => (
-                            <Badge key={index} variant="destructive" className="bg-red-100 text-red-800">
-                              {keyword}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Suggestions */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <Lightbulb className="mr-2 h-5 w-5" />
-                        Optimization Suggestions
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-2">
-                        {analysis.suggestions.map((suggestion, index) => (
-                          <li key={index} className="flex items-start">
-                            <AlertCircle className="h-4 w-4 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" />
-                            <span className="text-sm">{suggestion}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-
-                  {/* Strengths */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <Shield className="mr-2 h-5 w-5" />
-                        Resume Strengths
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-2">
-                        {analysis.strengths.map((strength, index) => (
-                          <li key={index} className="flex items-start">
-                            <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                            <span className="text-sm">{strength}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-
-                  {/* Download Report */}
-                  <Button variant="outline" className="w-full">
-                    <Download className="mr-2 h-4 w-4" />
-                    Download Detailed Report
-                  </Button>
-
-                  {/* Job-Specific Feedback */}
-                  {analysis.jobSpecificFeedback && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center">
-                          <Target className="mr-2 h-5 w-5" />
-                          Job-Specific Analysis
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          {analysis.jobSpecificFeedback}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-                </>
-              ) : (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <FileText className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Ready for Analysis</h3>
-                    <p className="text-muted-foreground">
-                      Upload your resume and optionally add a job description for targeted analysis.
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
+          {/* Coming Soon Section */}
+          <Card className="mb-12">
+            <CardContent className="py-16 text-center">
+              <div className="max-w-md mx-auto">
+                <div className="bg-yellow-100 rounded-full p-4 w-16 h-16 mx-auto mb-6 flex items-center justify-center">
+                  <Zap className="h-8 w-8 text-yellow-600" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Launching Soon!</h3>
+                <p className="text-muted-foreground mb-6">
+                  We're putting the finishing touches on our comprehensive ATS optimization tool. 
+                  It will include advanced keyword analysis, format scoring, and personalized recommendations 
+                  to help your resume stand out to both ATS systems and recruiters.
+                </p>
+                <div className="bg-muted rounded-lg p-4">
+                  <h4 className="font-semibold mb-2">What to expect:</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• AI-powered keyword optimization</li>
+                    <li>• ATS compatibility scoring</li>
+                    <li>• Job-specific recommendations</li>
+                    <li>• Format and readability analysis</li>
+                    <li>• Downloadable optimization reports</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Tips Section */}
           <Card className="mt-12">
