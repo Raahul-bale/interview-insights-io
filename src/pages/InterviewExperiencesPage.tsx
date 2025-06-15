@@ -53,9 +53,9 @@ const InterviewExperiencesPage = () => {
   const [experiences, setExperiences] = useState<InterviewExperience[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCompany, setFilterCompany] = useState("");
-  const [filterType, setFilterType] = useState("");
-  const [filterLevel, setFilterLevel] = useState("");
+  const [filterCompany, setFilterCompany] = useState("all");
+  const [filterType, setFilterType] = useState("all");
+  const [filterLevel, setFilterLevel] = useState("all");
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
 
   const fetchExperiences = async () => {
@@ -68,15 +68,15 @@ const InterviewExperiencesPage = () => {
         query = query.or(`company_name.ilike.%${searchTerm}%,position.ilike.%${searchTerm}%,title.ilike.%${searchTerm}%`);
       }
 
-      if (filterCompany) {
+      if (filterCompany && filterCompany !== "all") {
         query = query.eq('company_name', filterCompany);
       }
 
-      if (filterType) {
+      if (filterType && filterType !== "all") {
         query = query.eq('interview_type', filterType);
       }
 
-      if (filterLevel) {
+      if (filterLevel && filterLevel !== "all") {
         query = query.eq('experience_level', filterLevel);
       }
 
@@ -158,7 +158,7 @@ const InterviewExperiencesPage = () => {
                   <SelectValue placeholder="Company" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Companies</SelectItem>
+                  <SelectItem value="all">All Companies</SelectItem>
                   {companies.map(company => (
                     <SelectItem key={company} value={company}>{company}</SelectItem>
                   ))}
@@ -170,7 +170,7 @@ const InterviewExperiencesPage = () => {
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   {interviewTypes.map(type => (
                     <SelectItem key={type} value={type}>
                       {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -184,7 +184,7 @@ const InterviewExperiencesPage = () => {
                   <SelectValue placeholder="Level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Levels</SelectItem>
+                  <SelectItem value="all">All Levels</SelectItem>
                   {experienceLevels.map(level => (
                     <SelectItem key={level} value={level}>
                       {level.charAt(0).toUpperCase() + level.slice(1)}
@@ -287,7 +287,7 @@ const InterviewExperiencesPage = () => {
                 <Target className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No Experiences Found</h3>
                 <p className="text-muted-foreground mb-4">
-                  {searchTerm || filterCompany || filterType || filterLevel
+                  {searchTerm || (filterCompany !== "all") || (filterType !== "all") || (filterLevel !== "all")
                     ? "Try adjusting your filters to see more results."
                     : "Be the first to share an interview experience!"
                   }
