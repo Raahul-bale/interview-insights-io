@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRealTimeStats } from "@/hooks/useRealTimeStats";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Brain, 
@@ -43,6 +44,7 @@ import { Link } from "react-router-dom";
 const HomePage = () => {
   const { user, signIn, signUp } = useAuth();
   const { toast } = useToast();
+  const { stats: realTimeStats, loading: statsLoading } = useRealTimeStats();
   
   // User profile state
   const [userProfile, setUserProfile] = useState<{
@@ -240,10 +242,10 @@ const HomePage = () => {
   ];
 
   const stats = [
-    { number: "10,000+", label: "Interview Experiences" },
-    { number: "95%", label: "Success Rate" },
-    { number: "500+", label: "Companies Covered" },
-    { number: "50,000+", label: "Happy Users" }
+    { number: statsLoading ? "..." : realTimeStats.experiences, label: "Interview Experiences" },
+    { number: statsLoading ? "..." : realTimeStats.successRate, label: "Success Rate" },
+    { number: statsLoading ? "..." : realTimeStats.companies, label: "Companies Covered" },
+    { number: statsLoading ? "..." : realTimeStats.users, label: "Happy Users" }
   ];
 
   if (user) {
