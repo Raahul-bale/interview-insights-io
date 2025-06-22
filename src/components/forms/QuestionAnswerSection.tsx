@@ -5,14 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2 } from 'lucide-react';
-
-type FormData = {
-  company: string;
-  role: string;
-  date: string;
-  linkedinUrl: string;
-  rounds: any[];
-};
+import { FormData } from './types';
 
 interface QuestionAnswerSectionProps {
   roundIndex: number;

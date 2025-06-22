@@ -5,14 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Linkedin, AlertCircle } from 'lucide-react';
-
-type FormData = {
-  company: string;
-  role: string;
-  date: string;
-  linkedinUrl: string;
-  rounds: any[];
-};
+import { FormData } from './types';
 
 interface BasicInfoFieldsProps {
   register: UseFormRegister<FormData>;

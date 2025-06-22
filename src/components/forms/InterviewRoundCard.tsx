@@ -8,14 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Trash2 } from 'lucide-react';
 import QuestionAnswerSection from './QuestionAnswerSection';
-
-type FormData = {
-  company: string;
-  role: string;
-  date: string;
-  linkedinUrl: string;
-  rounds: any[];
-};
+import { FormData } from './types';
 
 interface InterviewRoundCardProps {
   roundIndex: number;
@@ -36,6 +29,10 @@ const InterviewRoundCard: React.FC<InterviewRoundCardProps> = ({
   setValue,
   errors,
 }) => {
+  const roundError = errors.rounds?.[roundIndex];
+  const typeError = roundError?.type;
+  const experienceError = roundError?.experience;
+
   return (
     <Card className="border-2">
       <CardHeader className="pb-4">
@@ -78,10 +75,10 @@ const InterviewRoundCard: React.FC<InterviewRoundCardProps> = ({
                 <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
-            {errors.rounds?.[roundIndex]?.type && (
+            {typeError && (
               <p className="text-sm text-red-500">
-                {typeof errors.rounds[roundIndex]?.type === 'object' && errors.rounds[roundIndex]?.type?.message
-                  ? errors.rounds[roundIndex]?.type?.message
+                {typeof typeError === 'object' && 'message' in typeError
+                  ? typeError.message
                   : 'Round type is required'}
               </p>
             )}
@@ -121,10 +118,10 @@ const InterviewRoundCard: React.FC<InterviewRoundCardProps> = ({
             placeholder="Describe your overall experience for this round..."
             className="min-h-[120px] mobile-touch-target"
           />
-          {errors.rounds?.[roundIndex]?.experience && (
+          {experienceError && (
             <p className="text-sm text-red-500">
-              {typeof errors.rounds[roundIndex]?.experience === 'object' && errors.rounds[roundIndex]?.experience?.message
-                ? errors.rounds[roundIndex]?.experience?.message
+              {typeof experienceError === 'object' && 'message' in experienceError
+                ? experienceError.message
                 : 'Experience description is required'}
             </p>
           )}
