@@ -60,9 +60,22 @@ const AuthPage = () => {
     const { error } = await signIn(loginEmail, loginPassword);
     
     if (error) {
+      let errorMessage = "Invalid email or password";
+      
+      // Check for specific error codes
+      if (error.message?.includes('invalid_credentials') || error.message?.includes('Invalid login credentials')) {
+        errorMessage = "Invalid email or password";
+      } else if (error.message?.includes('email_not_confirmed')) {
+        errorMessage = "Please check your email and confirm your account before signing in";
+      } else if (error.message?.includes('too_many_requests')) {
+        errorMessage = "Too many login attempts. Please try again later";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid email or password",
+        description: errorMessage,
         variant: "destructive",
       });
     } else {
