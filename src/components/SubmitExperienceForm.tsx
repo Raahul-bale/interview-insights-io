@@ -4,17 +4,14 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Linkedin, AlertCircle } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import BasicInfoFields from './forms/BasicInfoFields';
+import InterviewRoundCard from './forms/InterviewRoundCard';
 
 const roundSchema = z.object({
   type: z.string().min(1, 'Round type is required'),
@@ -98,20 +95,6 @@ const SubmitExperienceForm = () => {
 
     fetchLinkedInProfile();
   }, [user, setValue]);
-
-  const addQuestion = (roundIndex: number) => {
-    const currentRound = watch(`rounds.${roundIndex}`);
-    setValue(`rounds.${roundIndex}.questions`, [...currentRound.questions, '']);
-    setValue(`rounds.${roundIndex}.answers`, [...(currentRound.answers || []), '']);
-  };
-
-  const removeQuestion = (roundIndex: number, questionIndex: number) => {
-    const currentRound = watch(`rounds.${roundIndex}`);
-    const newQuestions = currentRound.questions.filter((_, index) => index !== questionIndex);
-    const newAnswers = (currentRound.answers || []).filter((_, index) => index !== questionIndex);
-    setValue(`rounds.${roundIndex}.questions`, newQuestions);
-    setValue(`rounds.${roundIndex}.answers`, newAnswers);
-  };
 
   const onSubmit = async (data: FormData) => {
     if (!user) {
@@ -197,71 +180,7 @@ const SubmitExperienceForm = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Basic Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="company">Company Name *</Label>
-                <Input
-                  id="company"
-                  {...register('company')}
-                  placeholder="e.g., Google, Microsoft, Amazon"
-                  className="mobile-touch-target"
-                />
-                {errors.company && (
-                  <p className="text-sm text-red-500">{errors.company.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="role">Role *</Label>
-                <Input
-                  id="role"
-                  {...register('role')}
-                  placeholder="e.g., Software Engineer, Product Manager"
-                  className="mobile-touch-target"
-                />
-                {errors.role && (
-                  <p className="text-sm text-red-500">{errors.role.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="date">Interview Date *</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  {...register('date')}
-                  className="mobile-touch-target"
-                />
-                {errors.date && (
-                  <p className="text-sm text-red-500">{errors.date.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="linkedinUrl" className="flex items-center gap-2">
-                  <Linkedin className="h-4 w-4 text-[#0077B5]" />
-                  LinkedIn Profile URL *
-                </Label>
-                <Input
-                  id="linkedinUrl"
-                  {...register('linkedinUrl')}
-                  placeholder="https://www.linkedin.com/in/yourprofile"
-                  className="mobile-touch-target"
-                />
-                {errors.linkedinUrl && (
-                  <p className="text-sm text-red-500">{errors.linkedinUrl.message}</p>
-                )}
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription className="text-xs">
-                    LinkedIn profile is required to help others connect with you and verify authenticity.
-                  </AlertDescription>
-                </Alert>
-              </div>
-            </div>
+            <BasicInfoFields register={register} errors={errors} />
 
             {/* Interview Rounds */}
             <div className="space-y-4">
@@ -288,142 +207,16 @@ const SubmitExperienceForm = () => {
               </div>
 
               {fields.map((field, roundIndex) => (
-                <Card key={field.id} className="border-2">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">Round {roundIndex + 1}</CardTitle>
-                      {fields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => remove(roundIndex)}
-                          className="mobile-touch-target"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Round Type *</Label>
-                        <Select
-                          onValueChange={(value) =>
-                            setValue(`rounds.${roundIndex}.type`, value)
-                          }
-                        >
-                          <SelectTrigger className="mobile-touch-target">
-                            <SelectValue placeholder="Select round type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Phone Screen">Phone Screen</SelectItem>
-                            <SelectItem value="Technical Interview">Technical Interview</SelectItem>
-                            <SelectItem value="System Design">System Design</SelectItem>
-                            <SelectItem value="Behavioral Interview">Behavioral Interview</SelectItem>
-                            <SelectItem value="Coding Challenge">Coding Challenge</SelectItem>
-                            <SelectItem value="Case Study">Case Study</SelectItem>
-                            <SelectItem value="Final Interview">Final Interview</SelectItem>
-                            <SelectItem value="HR Interview">HR Interview</SelectItem>
-                            <SelectItem value="Other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {errors.rounds?.[roundIndex]?.type && (
-                          <p className="text-sm text-red-500">
-                            {typeof errors.rounds[roundIndex]?.type === 'object' && errors.rounds[roundIndex]?.type?.message
-                              ? errors.rounds[roundIndex]?.type?.message
-                              : 'Round type is required'}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Difficulty *</Label>
-                        <Select
-                          onValueChange={(value) =>
-                            setValue(`rounds.${roundIndex}.difficulty`, value as 'Easy' | 'Medium' | 'Hard')
-                          }
-                          defaultValue="Medium"
-                        >
-                          <SelectTrigger className="mobile-touch-target">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Easy">Easy</SelectItem>
-                            <SelectItem value="Medium">Medium</SelectItem>
-                            <SelectItem value="Hard">Hard</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    {/* Questions and Answers */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Label>Questions & Answers</Label>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => addQuestion(roundIndex)}
-                          className="mobile-touch-target"
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Question
-                        </Button>
-                      </div>
-
-                      {watch(`rounds.${roundIndex}.questions`).map((_, questionIndex) => (
-                        <div key={questionIndex} className="space-y-2 p-3 bg-muted rounded-lg">
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm font-medium">
-                              Question {questionIndex + 1}
-                            </Label>
-                            {watch(`rounds.${roundIndex}.questions`).length > 1 && (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeQuestion(roundIndex, questionIndex)}
-                                className="mobile-touch-target"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                          <Textarea
-                            {...register(`rounds.${roundIndex}.questions.${questionIndex}`)}
-                            placeholder="Enter the interview question..."
-                            className="mobile-touch-target"
-                          />
-                          <Textarea
-                            {...register(`rounds.${roundIndex}.answers.${questionIndex}`)}
-                            placeholder="Your answer (optional)..."
-                            className="mobile-touch-target"
-                          />
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Overall Experience */}
-                    <div className="space-y-2">
-                      <Label>Overall Experience for this Round *</Label>
-                      <Textarea
-                        {...register(`rounds.${roundIndex}.experience`)}
-                        placeholder="Describe your overall experience for this round..."
-                        className="min-h-[120px] mobile-touch-target"
-                      />
-                      {errors.rounds?.[roundIndex]?.experience && (
-                        <p className="text-sm text-red-500">
-                          {typeof errors.rounds[roundIndex]?.experience === 'object' && errors.rounds[roundIndex]?.experience?.message
-                            ? errors.rounds[roundIndex]?.experience?.message
-                            : 'Experience description is required'}
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                <InterviewRoundCard
+                  key={field.id}
+                  roundIndex={roundIndex}
+                  onRemove={() => remove(roundIndex)}
+                  canRemove={fields.length > 1}
+                  register={register}
+                  watch={watch}
+                  setValue={setValue}
+                  errors={errors}
+                />
               ))}
             </div>
 
