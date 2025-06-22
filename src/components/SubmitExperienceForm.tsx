@@ -331,7 +331,7 @@ const SubmitExperienceForm = () => {
                         </Select>
                         {errors.rounds?.[roundIndex]?.type && (
                           <p className="text-sm text-red-500">
-                            {errors.rounds[roundIndex]?.type?.message}
+                            {String(errors.rounds[roundIndex]?.type?.message)}
                           </p>
                         )}
                       </div>
@@ -414,7 +414,7 @@ const SubmitExperienceForm = () => {
                       />
                       {errors.rounds?.[roundIndex]?.experience && (
                         <p className="text-sm text-red-500">
-                          {errors.rounds[roundIndex]?.experience?.message}
+                          {String(errors.rounds[roundIndex]?.experience?.message)}
                         </p>
                       )}
                     </div>

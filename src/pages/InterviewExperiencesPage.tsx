@@ -57,7 +57,7 @@ const InterviewExperiencesPage = () => {
   const [experiences, setExperiences] = useState<InterviewPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCompany, setFilterCompany] = useState("all");
+  const [filterCompany, set Kev filterCompany] = useState("all");
   const [filterType, setFilterType] = useState("all");
   const [filterLevel, setFilterLevel] = useState("all");
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
@@ -214,7 +214,7 @@ const InterviewExperiencesPage = () => {
                     <DialogHeader>
                       <DialogTitle>Share Your Interview Experience</DialogTitle>
                     </DialogHeader>
-                    <SubmitExperienceForm onSuccess={handleExperienceSubmitted} />
+                    <SubmitExperienceForm />
                   </DialogContent>
                 </Dialog>
               )}

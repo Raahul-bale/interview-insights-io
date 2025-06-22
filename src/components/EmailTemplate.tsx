@@ -308,16 +308,16 @@ const EmailTemplate: React.FC<EmailTemplateProps> = ({
 
           <div className="footer">
             <p className="footer-text">
-              <strong>Need help?</strong> Contact us at <a href="mailto:support@interviewinsights.com" style="color: #667eea; text-decoration: none;">support@interviewinsights.com</a>
+              <strong>Need help?</strong> Contact us at <a href="mailto:support@interviewinsights.com">support@interviewinsights.com</a>
             </p>
             <div className="footer-links">
               <span>© 2024 {siteName}</span>
               <span> | </span>
-              <a href="#" style={{ color: '#667eea', textDecoration: 'none' }}>Privacy Policy</a>
+              <a href="#">Privacy Policy</a>
               <span> | </span>
-              <a href="#" style={{ color: '#667eea', textDecoration: 'none' }}>Terms of Service</a>
+              <a href="#">Terms of Service</a>
               <span> | </span>
-              <a href="#" style={{ color: '#667eea', textDecoration: 'none' }}>Unsubscribe</a>
+              <a href="#">Unsubscribe</a>
             </div>
             <p className="footer-text" style={{ marginTop: '15px', fontSize: '12px' }}>
               This email was sent from a trusted source. Adding us to your contacts helps ensure delivery to your primary inbox.
