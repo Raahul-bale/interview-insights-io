@@ -1,6 +1,8 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -25,6 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -34,6 +37,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Handle email verification success
+        if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at) {
+          // Check if this is from email verification (has token in URL)
+          const urlParams = new URLSearchParams(window.location.search);
+          const isFromEmailVerification = urlParams.has('token_hash') || urlParams.has('type');
+          
+          if (isFromEmailVerification) {
+            toast({
+              title: "Email Verified Successfully!",
+              description: "Welcome to Interview Insights! Your account is now active.",
+            });
+            
+            // Redirect to home page and clear URL parameters
+            setTimeout(() => {
+              window.history.replaceState({}, document.title, '/');
+            }, 1000);
+          }
+        }
       }
     );
 
@@ -45,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [toast]);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {

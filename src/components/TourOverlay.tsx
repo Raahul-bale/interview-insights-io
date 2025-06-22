@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,9 +39,9 @@ const TourOverlay = () => {
           inline: 'center'
         });
         
-        // Calculate overlay styles
+        // Calculate overlay styles - mobile responsive
         const rect = element.getBoundingClientRect();
-        const padding = 8;
+        const padding = window.innerWidth < 768 ? 4 : 8;
         
         setOverlayStyle({
           position: 'fixed',
@@ -48,62 +49,68 @@ const TourOverlay = () => {
           left: rect.left - padding,
           width: rect.width + (padding * 2),
           height: rect.height + (padding * 2),
-          borderRadius: '12px',
-          boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 0 9999px rgba(0, 0, 0, 0.5)',
+          borderRadius: window.innerWidth < 768 ? '8px' : '12px',
+          boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 0 9999px rgba(0, 0, 0, 0.4)',
           pointerEvents: 'none',
           zIndex: 9998,
           transition: 'all 0.3s ease'
         });
 
-        // Calculate tooltip position - beside each feature
-        const tooltipWidth = 300;
-        const tooltipHeight = 180;
-        const placement = currentStepData.placement || 'right';
-        const margin = 16; // Space between element and tooltip
+        // Calculate tooltip position - mobile responsive
+        const isMobile = window.innerWidth < 768;
+        const tooltipWidth = isMobile ? window.innerWidth - 32 : 320;
+        const tooltipMaxHeight = isMobile ? 'auto' : '220px';
+        const placement = isMobile ? 'bottom' : (currentStepData.placement || 'right');
+        const margin = isMobile ? 8 : 16;
         
         let top, left;
         
-        switch (placement) {
-          case 'top':
-            top = rect.top - tooltipHeight - margin;
-            left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
-            break;
-          case 'bottom':
-            top = rect.bottom + margin;
-            left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
-            break;
-          case 'left':
-            top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
-            left = rect.left - tooltipWidth - margin;
-            break;
-          case 'right':
-            top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
-            left = rect.right + margin;
-            break;
-          default:
-            // Default to right side
-            top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
-            left = rect.right + margin;
-        }
+        if (isMobile) {
+          // On mobile, always place tooltip at bottom with full width
+          top = Math.min(rect.bottom + margin, window.innerHeight - 300);
+          left = 16;
+        } else {
+          // Desktop positioning logic
+          switch (placement) {
+            case 'top':
+              top = rect.top - 180 - margin;
+              left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+              break;
+            case 'bottom':
+              top = rect.bottom + margin;
+              left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+              break;
+            case 'left':
+              top = rect.top + (rect.height / 2) - 90;
+              left = rect.left - tooltipWidth - margin;
+              break;
+            case 'right':
+              top = rect.top + (rect.height / 2) - 90;
+              left = rect.right + margin;
+              break;
+            default:
+              top = rect.top + (rect.height / 2) - 90;
+              left = rect.right + margin;
+          }
 
-        // Ensure tooltip stays within viewport
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        
-        if (left < 10) left = 10;
-        if (left + tooltipWidth > viewportWidth - 10) left = viewportWidth - tooltipWidth - 10;
-        if (top < 10) top = 10;
-        if (top + tooltipHeight > viewportHeight - 10) top = viewportHeight - tooltipHeight - 10;
+          // Ensure tooltip stays within viewport on desktop
+          if (left < 10) left = 10;
+          if (left + tooltipWidth > window.innerWidth - 10) left = window.innerWidth - tooltipWidth - 10;
+          if (top < 10) top = 10;
+          if (top + 180 > window.innerHeight - 10) top = window.innerHeight - 180 - 10;
+        }
 
         setTooltipStyle({
           position: 'fixed',
           top,
           left,
           width: tooltipWidth,
+          maxHeight: tooltipMaxHeight,
           zIndex: 9999,
           transform: 'scale(1)',
           opacity: 1,
-          transition: 'all 0.3s ease'
+          transition: 'all 0.3s ease',
+          overflow: isMobile ? 'visible' : 'hidden'
         });
       }
     };
@@ -125,33 +132,35 @@ const TourOverlay = () => {
   console.log('TourOverlay render check - isActive:', isActive, 'currentStepData:', currentStepData, 'targetElement:', targetElement);
   if (!isActive || !currentStepData || !targetElement) return null;
 
+  const isMobile = window.innerWidth < 768;
+
   return (
     <>
       {/* Highlight overlay */}
       <div style={overlayStyle} />
       
       {/* Tooltip */}
-      <Card style={tooltipStyle} className="shadow-xl border-2 border-primary bg-card/95 backdrop-blur-sm">
-        <CardHeader className="pb-3">
+      <Card style={tooltipStyle} className="shadow-xl border-2 border-primary bg-card/98 backdrop-blur-sm">
+        <CardHeader className={isMobile ? "pb-2 px-4 pt-4" : "pb-3"}>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold">
+            <CardTitle className={isMobile ? "text-base font-semibold" : "text-lg font-semibold"}>
               {currentStepData.title}
             </CardTitle>
             <Button
               variant="ghost"
               size="icon"
               onClick={completeTour}
-              className="h-6 w-6"
+              className={isMobile ? "h-5 w-5" : "h-6 w-6"}
             >
-              <X className="h-4 w-4" />
+              <X className={isMobile ? "h-3 w-3" : "h-4 w-4"} />
             </Button>
           </div>
-          <div className="text-xs text-muted-foreground">
+          <div className={isMobile ? "text-xs text-muted-foreground" : "text-xs text-muted-foreground"}>
             Step {currentStep + 1} of {totalSteps}
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-foreground">
+        <CardContent className={isMobile ? "space-y-3 px-4 pb-4" : "space-y-4"}>
+          <p className={isMobile ? "text-sm text-foreground leading-relaxed" : "text-sm text-foreground"}>
             {currentStepData.content}
           </p>
           
@@ -160,12 +169,12 @@ const TourOverlay = () => {
               {currentStepData.showPrev && currentStep > 0 && (
                 <Button
                   variant="outline"
-                  size="sm"
+                  size={isMobile ? "sm" : "sm"}
                   onClick={prevStep}
-                  className="h-8"
+                  className={isMobile ? "h-8 text-xs" : "h-8"}
                 >
                   <ChevronLeft className="h-3 w-3 mr-1" />
-                  Previous
+                  {isMobile ? "Prev" : "Previous"}
                 </Button>
               )}
             </div>
@@ -174,19 +183,19 @@ const TourOverlay = () => {
               {currentStepData.showSkip && (
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size={isMobile ? "sm" : "sm"}
                   onClick={skipTour}
-                  className="h-8 text-muted-foreground"
+                  className={isMobile ? "h-8 text-xs text-muted-foreground" : "h-8 text-muted-foreground"}
                 >
                   <SkipForward className="h-3 w-3 mr-1" />
-                  Skip Tour
+                  Skip
                 </Button>
               )}
               {currentStepData.showNext && (
                 <Button
-                  size="sm"
+                  size={isMobile ? "sm" : "sm"}
                   onClick={nextStep}
-                  className="h-8"
+                  className={isMobile ? "h-8 text-xs" : "h-8"}
                 >
                   {currentStep === totalSteps - 1 ? 'Finish' : 'Next'}
                   {currentStep !== totalSteps - 1 && (
@@ -198,11 +207,11 @@ const TourOverlay = () => {
           </div>
           
           {/* Progress dots */}
-          <div className="flex justify-center gap-1 pt-2">
+          <div className="flex justify-center gap-1 pt-1">
             {Array.from({ length: totalSteps }).map((_, index) => (
               <div
                 key={index}
-                className={`w-2 h-2 rounded-full transition-colors ${
+                className={`${isMobile ? 'w-1.5 h-1.5' : 'w-2 h-2'} rounded-full transition-colors ${
                   index === currentStep 
                     ? 'bg-primary' 
                     : index < currentStep 

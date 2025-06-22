@@ -84,9 +84,9 @@ const Header = () => {
       <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center space-x-2 text-2xl font-bold text-primary" data-tour="header-logo">
-              <BookOpen className="h-8 w-8" />
-              <span>Interview Insights</span>
+            <Link to="/" className="flex items-center space-x-2 text-2xl md:text-2xl lg:text-2xl xl:text-2xl font-bold text-primary mobile-text-lg" data-tour="header-logo">
+              <BookOpen className="h-6 w-6 md:h-8 md:w-8" />
+              <span className="text-lg md:text-2xl">Interview Insights</span>
             </Link>
           
            <nav className="hidden md:flex items-center space-x-6">
@@ -150,24 +150,30 @@ const Header = () => {
                 <div data-tour="user-menu">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
+                      <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                      <Avatar className="h-10 w-10">
                         {userProfile.avatar_url && (
                           <AvatarImage src={userProfile.avatar_url} alt="Profile picture" />
                         )}
-                        <AvatarFallback>
+                        <AvatarFallback className="text-sm font-semibold">
                           {getUserInitials(user.email || '', userProfile.full_name)}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <div className="flex items-center justify-start gap-2 p-2">
-                      <div className="flex flex-col space-y-1 leading-none">
-                        <p className="font-medium">{getDisplayName()}</p>
-                        {userProfile.full_name && (
-                          <p className="text-xs text-muted-foreground">{user.email}</p>
+                  <DropdownMenuContent className="w-64" align="end" forceMount>
+                    <div className="flex items-center justify-start gap-3 p-3">
+                      <Avatar className="h-12 w-12">
+                        {userProfile.avatar_url && (
+                          <AvatarImage src={userProfile.avatar_url} alt="Profile picture" />
                         )}
+                        <AvatarFallback className="text-sm font-semibold">
+                          {getUserInitials(user.email || '', userProfile.full_name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col space-y-1 leading-none">
+                        <p className="font-medium text-sm">{getDisplayName()}</p>
+                        <p className="text-xs text-muted-foreground truncate max-w-[180px]">{user.email}</p>
                       </div>
                     </div>
                     <DropdownMenuSeparator />
@@ -214,13 +220,30 @@ const Header = () => {
             {/* Mobile menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
+                <Button variant="ghost" size="icon" className="md:hidden h-10 w-10">
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <nav className="flex flex-col space-y-4">
+              <SheetContent side="right" className="w-[320px] sm:w-[400px]">
+                <nav className="flex flex-col space-y-4 pt-4">
+                  {user && (
+                    <div className="flex items-center gap-3 p-4 bg-muted rounded-lg mb-4">
+                      <Avatar className="h-14 w-14">
+                        {userProfile.avatar_url && (
+                          <AvatarImage src={userProfile.avatar_url} alt="Profile picture" />
+                        )}
+                        <AvatarFallback className="text-base font-semibold">
+                          {getUserInitials(user.email || '', userProfile.full_name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col space-y-1 leading-none flex-1 min-w-0">
+                        <p className="font-semibold text-base">{getDisplayName()}</p>
+                        <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                      </div>
+                    </div>
+                  )}
+                  
                   <Link 
                     to="/" 
                     className="text-lg font-medium hover:text-primary transition-colors"
