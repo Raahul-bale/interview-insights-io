@@ -331,7 +331,9 @@ const SubmitExperienceForm = () => {
                         </Select>
                         {errors.rounds?.[roundIndex]?.type && (
                           <p className="text-sm text-red-500">
-                            {String(errors.rounds[roundIndex]?.type?.message)}
+                            {typeof errors.rounds[roundIndex]?.type === 'object' && errors.rounds[roundIndex]?.type?.message
+                              ? errors.rounds[roundIndex]?.type?.message
+                              : 'Round type is required'}
                           </p>
                         )}
                       </div>
@@ -414,7 +416,9 @@ const SubmitExperienceForm = () => {
                       />
                       {errors.rounds?.[roundIndex]?.experience && (
                         <p className="text-sm text-red-500">
-                          {String(errors.rounds[roundIndex]?.experience?.message)}
+                          {typeof errors.rounds[roundIndex]?.experience === 'object' && errors.rounds[roundIndex]?.experience?.message
+                            ? errors.rounds[roundIndex]?.experience?.message
+                            : 'Experience description is required'}
                         </p>
                       )}
                     </div>
