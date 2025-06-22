@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SEO from '@/components/SEO';
@@ -197,7 +198,7 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col safe-area-top">
       <SEO 
         title="Login & Sign Up - Interview Insights"
         description="Access your Interview Insights account to get AI-powered interview preparation, share experiences, and connect with the interview prep community."
@@ -207,41 +208,60 @@ const AuthPage = () => {
         noIndex={true}
       />
       
-      {/* Mobile Header */}
-      <div className="flex items-center justify-between p-4 md:hidden border-b">
-        <Link to="/" className="flex items-center gap-2 text-primary">
+      {/* Mobile Header - Enhanced */}
+      <div className="flex items-center justify-between p-4 md:p-6 md:hidden border-b">
+        <Link to="/" className="flex items-center gap-2 text-primary mobile-touch-target">
           <ArrowLeft className="h-5 w-5" />
           <span className="font-semibold">Back</span>
         </Link>
-        <h1 className="text-lg font-bold">Interview Insights</h1>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-sm">II</span>
+          </div>
+          <h1 className="text-lg font-bold">Interview Insights</h1>
+        </div>
         <div className="w-16"></div> {/* Spacer for center alignment */}
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md mx-auto">
-          <CardHeader className="text-center space-y-2 pb-4">
-            <CardTitle className="text-2xl font-bold">Interview Prep Hub</CardTitle>
-            <CardDescription className="text-base">
-              Access AI-powered interview preparation
+      <div className="flex-1 flex items-center justify-center p-4 md:p-6">
+        <Card className="w-full max-w-md mx-auto mobile-p-4">
+          <CardHeader className="text-center space-y-3 md:space-y-4 pb-4 md:pb-6">
+            {/* Logo for larger screens */}
+            <div className="hidden md:flex items-center justify-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-lg">II</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">Interview Insights</h1>
+              </div>
+            </div>
+            
+            <CardTitle className="text-xl md:text-2xl lg:text-3xl font-bold mobile-text-xl">
+              Interview Prep Hub
+            </CardTitle>
+            <CardDescription className="text-sm md:text-base mobile-text-lg">
+              Access AI-powered interview preparation and connect with our community
             </CardDescription>
           </CardHeader>
         
-          <CardContent className="pt-0">
+          <CardContent className="pt-0 space-y-4 md:space-y-6">
             {showForgotPassword ? (
-              // Forgot Password Form
-              <div className="space-y-4">
-                <div className="text-center space-y-2">
-                  <h3 className="text-lg font-semibold">Reset Password</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Enter your email address and we'll send you a link to reset your password.
+              // Forgot Password Form - Mobile Enhanced
+              <div className="space-y-4 md:space-y-6">
+                <div className="text-center space-y-3">
+                  <h3 className="text-lg md:text-xl font-semibold mobile-text-xl">Reset Password</h3>
+                  <p className="text-sm md:text-base text-muted-foreground mobile-text-lg">
+                    Enter your email address and we'll send you a secure link to reset your password.
                   </p>
                 </div>
                 
-                <form onSubmit={handleForgotPassword} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="reset-email">Email Address</Label>
+                <form onSubmit={handleForgotPassword} className="space-y-4 md:space-y-6">
+                  <div className="space-y-2 md:space-y-3">
+                    <Label htmlFor="reset-email" className="text-sm md:text-base mobile-text-lg">
+                      Email Address
+                    </Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Mail className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
                       <Input
                         id="reset-email"
                         type="email"
@@ -250,15 +270,19 @@ const AuthPage = () => {
                         onChange={(e) => setResetEmail(e.target.value)}
                         disabled={isLoading}
                         required
-                        className="pl-10 h-12"
+                        className="pl-10 md:pl-12 h-12 md:h-14 text-base mobile-touch-target"
                       />
                     </div>
                   </div>
                   
-                  <Button type="submit" className="w-full h-12" disabled={isLoading}>
+                  <Button 
+                    type="submit" 
+                    className="w-full h-12 md:h-14 text-base mobile-touch-target btn-mobile" 
+                    disabled={isLoading}
+                  >
                     {isLoading ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 h-4 w-4 md:h-5 md:w-5 animate-spin" />
                         Sending Reset Email...
                       </>
                     ) : (
@@ -269,7 +293,7 @@ const AuthPage = () => {
                   <Button 
                     type="button" 
                     variant="ghost" 
-                    className="w-full h-12"
+                    className="w-full h-12 md:h-14 text-base mobile-touch-target"
                     onClick={() => setShowForgotPassword(false)}
                     disabled={isLoading}
                   >
@@ -278,17 +302,29 @@ const AuthPage = () => {
                 </form>
               </div>
             ) : (
-              // Login/Signup Tabs
+              // Login/Signup Tabs - Mobile Enhanced
               <Tabs defaultValue="login" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="login" className="h-10">Login</TabsTrigger>
-                  <TabsTrigger value="signup" className="h-10">Sign Up</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 mb-4 md:mb-6 h-12 md:h-14">
+                  <TabsTrigger 
+                    value="login" 
+                    className="h-10 md:h-12 text-sm md:text-base mobile-touch-target"
+                  >
+                    Login
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="signup" 
+                    className="h-10 md:h-12 text-sm md:text-base mobile-touch-target"
+                  >
+                    Sign Up
+                  </TabsTrigger>
                 </TabsList>
               
                 <TabsContent value="login">
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="login-email">Email</Label>
+                  <form onSubmit={handleLogin} className="space-y-4 md:space-y-6">
+                    <div className="space-y-2 md:space-y-3">
+                      <Label htmlFor="login-email" className="text-sm md:text-base mobile-text-lg">
+                        Email
+                      </Label>
                       <Input
                         id="login-email"
                         type="email"
@@ -297,12 +333,14 @@ const AuthPage = () => {
                         onChange={(e) => setLoginEmail(e.target.value)}
                         disabled={isLoading}
                         required
-                        className="h-12"
+                        className="h-12 md:h-14 text-base mobile-touch-target"
                       />
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="login-password">Password</Label>
+                    <div className="space-y-2 md:space-y-3">
+                      <Label htmlFor="login-password" className="text-sm md:text-base mobile-text-lg">
+                        Password
+                      </Label>
                       <div className="relative">
                         <Input
                           id="login-password"
@@ -312,20 +350,20 @@ const AuthPage = () => {
                           onChange={(e) => setLoginPassword(e.target.value)}
                           disabled={isLoading}
                           required
-                          className="h-12 pr-12"
+                          className="h-12 md:h-14 pr-12 md:pr-14 text-base mobile-touch-target"
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="absolute right-0 top-0 h-12 w-12 hover:bg-transparent"
+                          className="absolute right-0 top-0 h-12 md:h-14 w-12 md:w-14 hover:bg-transparent mobile-touch-target"
                           onClick={() => setShowPassword(!showPassword)}
                           disabled={isLoading}
                         >
                           {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
+                            <EyeOff className="h-4 w-4 md:h-5 md:w-5" />
                           ) : (
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-4 w-4 md:h-5 md:w-5" />
                           )}
                         </Button>
                       </div>
@@ -335,7 +373,7 @@ const AuthPage = () => {
                       <Button
                         type="button"
                         variant="link"
-                        className="p-0 h-auto text-sm"
+                        className="p-0 h-auto text-sm md:text-base mobile-touch-target"
                         onClick={() => setShowForgotPassword(true)}
                         disabled={isLoading}
                       >
@@ -343,10 +381,14 @@ const AuthPage = () => {
                       </Button>
                     </div>
                     
-                    <Button type="submit" className="w-full h-12" disabled={isLoading}>
+                    <Button 
+                      type="submit" 
+                      className="w-full h-12 md:h-14 text-base mobile-touch-target btn-mobile" 
+                      disabled={isLoading}
+                    >
                       {isLoading ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="mr-2 h-4 w-4 md:h-5 md:w-5 animate-spin" />
                           Signing in...
                         </>
                       ) : (
@@ -357,9 +399,11 @@ const AuthPage = () => {
                 </TabsContent>
                 
                 <TabsContent value="signup">
-                  <form onSubmit={handleSignup} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="full-name">Full Name</Label>
+                  <form onSubmit={handleSignup} className="space-y-4 md:space-y-6">
+                    <div className="space-y-2 md:space-y-3">
+                      <Label htmlFor="full-name" className="text-sm md:text-base mobile-text-lg">
+                        Full Name
+                      </Label>
                       <Input
                         id="full-name"
                         type="text"
@@ -368,12 +412,14 @@ const AuthPage = () => {
                         onChange={(e) => setFullName(e.target.value)}
                         disabled={isLoading}
                         required
-                        className="h-12"
+                        className="h-12 md:h-14 text-base mobile-touch-target"
                       />
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
+                    <div className="space-y-2 md:space-y-3">
+                      <Label htmlFor="signup-email" className="text-sm md:text-base mobile-text-lg">
+                        Email
+                      </Label>
                       <Input
                         id="signup-email"
                         type="email"
@@ -382,12 +428,14 @@ const AuthPage = () => {
                         onChange={(e) => setSignupEmail(e.target.value)}
                         disabled={isLoading}
                         required
-                        className="h-12"
+                        className="h-12 md:h-14 text-base mobile-touch-target"
                       />
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-password">Password</Label>
+                    <div className="space-y-2 md:space-y-3">
+                      <Label htmlFor="signup-password" className="text-sm md:text-base mobile-text-lg">
+                        Password
+                      </Label>
                       <div className="relative">
                         <Input
                           id="signup-password"
@@ -398,27 +446,29 @@ const AuthPage = () => {
                           disabled={isLoading}
                           required
                           minLength={6}
-                          className="h-12 pr-12"
+                          className="h-12 md:h-14 pr-12 md:pr-14 text-base mobile-touch-target"
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="absolute right-0 top-0 h-12 w-12 hover:bg-transparent"
+                          className="absolute right-0 top-0 h-12 md:h-14 w-12 md:w-14 hover:bg-transparent mobile-touch-target"
                           onClick={() => setShowPassword(!showPassword)}
                           disabled={isLoading}
                         >
                           {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
+                            <EyeOff className="h-4 w-4 md:h-5 md:w-5" />
                           ) : (
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-4 w-4 md:h-5 md:w-5" />
                           )}
                         </Button>
                       </div>
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <div className="space-y-2 md:space-y-3">
+                      <Label htmlFor="confirm-password" className="text-sm md:text-base mobile-text-lg">
+                        Confirm Password
+                      </Label>
                       <div className="relative">
                         <Input
                           id="confirm-password"
@@ -428,29 +478,33 @@ const AuthPage = () => {
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           disabled={isLoading}
                           required
-                          className="h-12 pr-12"
+                          className="h-12 md:h-14 pr-12 md:pr-14 text-base mobile-touch-target"
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="absolute right-0 top-0 h-12 w-12 hover:bg-transparent"
+                          className="absolute right-0 top-0 h-12 md:h-14 w-12 md:w-14 hover:bg-transparent mobile-touch-target"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           disabled={isLoading}
                         >
                           {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" />
+                            <EyeOff className="h-4 w-4 md:h-5 md:w-5" />
                           ) : (
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-4 w-4 md:h-5 md:w-5" />
                           )}
                         </Button>
                       </div>
                     </div>
                     
-                    <Button type="submit" className="w-full h-12" disabled={isLoading}>
+                    <Button 
+                      type="submit" 
+                      className="w-full h-12 md:h-14 text-base mobile-touch-target btn-mobile" 
+                      disabled={isLoading}
+                    >
                       {isLoading ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="mr-2 h-4 w-4 md:h-5 md:w-5 animate-spin" />
                           Creating account...
                         </>
                       ) : (
