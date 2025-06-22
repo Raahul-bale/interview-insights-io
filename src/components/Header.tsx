@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import SkipLink from "@/components/SkipLink";
 import { Button } from "@/components/ui/button";
@@ -81,7 +82,7 @@ const Header = () => {
   return (
     <>
       <SkipLink />
-      <header className="bg-card border-b border-border sticky top-0 z-50">
+      <header className="bg-background/10 backdrop-blur-xl border-b border-border/20 sticky top-0 z-50 shadow-lg">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center space-x-2 text-2xl md:text-2xl lg:text-2xl xl:text-2xl font-bold text-primary mobile-text-lg" data-tour="header-logo">
@@ -92,14 +93,14 @@ const Header = () => {
            <nav className="hidden md:flex items-center space-x-6">
              <Link 
                to="/" 
-               className="text-foreground hover:text-primary transition-colors"
+               className="text-foreground hover:text-primary transition-all duration-300 px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                data-tour="nav-home"
              >
                Home
              </Link>
              <Link 
                to="/interview-experiences" 
-               className="text-foreground hover:text-primary transition-colors"
+               className="text-foreground hover:text-primary transition-all duration-300 px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                data-tour="nav-experiences"
              >
                Experiences
@@ -108,28 +109,28 @@ const Header = () => {
               <>
                 <Link 
                   to="/submit" 
-                  className="text-foreground hover:text-primary transition-colors"
+                  className="text-foreground hover:text-primary transition-all duration-300 px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                   data-tour="nav-submit"
                 >
                   Share Experience
                 </Link>
                  <Link 
                    to="/chat" 
-                   className="text-foreground hover:text-primary transition-colors"
+                   className="text-foreground hover:text-primary transition-all duration-300 px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                    data-tour="nav-chat"
                  >
                    AI Prep Chat
                  </Link>
                  <Link 
                    to="/resume-ats" 
-                   className="text-foreground hover:text-primary transition-colors"
+                   className="text-foreground hover:text-primary transition-all duration-300 px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                    data-tour="nav-ats"
                  >
                     Resume ATS
                   </Link>
                   <Link 
                     to="/conversations" 
-                    className="text-foreground hover:text-primary transition-colors"
+                    className="text-foreground hover:text-primary transition-all duration-300 px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                     data-tour="nav-conversations"
                   >
                     My Chats
@@ -155,19 +156,19 @@ const Header = () => {
                         {userProfile.avatar_url && (
                           <AvatarImage src={userProfile.avatar_url} alt="Profile picture" />
                         )}
-                        <AvatarFallback className="text-sm font-semibold">
+                        <AvatarFallback className="text-sm font-semibold bg-primary/20 backdrop-blur-md border border-primary/30">
                           {getUserInitials(user.email || '', userProfile.full_name)}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-64" align="end" forceMount>
+                  <DropdownMenuContent className="w-64 bg-background/80 backdrop-blur-xl border-border/50 shadow-2xl" align="end" forceMount>
                     <div className="flex items-center justify-start gap-3 p-3">
                       <Avatar className="h-12 w-12">
                         {userProfile.avatar_url && (
                           <AvatarImage src={userProfile.avatar_url} alt="Profile picture" />
                         )}
-                        <AvatarFallback className="text-sm font-semibold">
+                        <AvatarFallback className="text-sm font-semibold bg-primary/20 backdrop-blur-md border border-primary/30">
                           {getUserInitials(user.email || '', userProfile.full_name)}
                         </AvatarFallback>
                       </Avatar>
@@ -176,25 +177,25 @@ const Header = () => {
                         <p className="text-xs text-muted-foreground truncate max-w-[180px]">{user.email}</p>
                       </div>
                     </div>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuSeparator className="bg-border/50" />
+                    <DropdownMenuItem asChild className="hover:bg-primary/10 backdrop-blur-sm">
                       <Link to="/profile" className="cursor-pointer">
                         <User className="mr-2 h-4 w-4" />
                         <span>Profile</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="hover:bg-primary/10 backdrop-blur-sm">
                       <Link to="/profile?tab=experiences" className="cursor-pointer">
                         <Edit className="mr-2 h-4 w-4" />
                         <span>My Experiences</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => window.location.href = 'mailto:baleraahul@gmail.com?subject=Query from Interview Experience App'}>
+                    <DropdownMenuItem onClick={() => window.location.href = 'mailto:baleraahul@gmail.com?subject=Query from Interview Experience App'} className="hover:bg-primary/10 backdrop-blur-sm">
                       <Mail className="mr-2 h-4 w-4" />
                       <span>Contact Us</span>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut}>
+                    <DropdownMenuSeparator className="bg-border/50" />
+                    <DropdownMenuItem onClick={handleSignOut} className="hover:bg-destructive/10 backdrop-blur-sm">
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Sign out</span>
                     </DropdownMenuItem>
@@ -225,15 +226,15 @@ const Header = () => {
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[320px] sm:w-[400px]">
+              <SheetContent side="right" className="w-[320px] sm:w-[400px] bg-background/80 backdrop-blur-xl border-border/50">
                 <nav className="flex flex-col space-y-4 pt-4">
                   {user && (
-                    <div className="flex items-center gap-3 p-4 bg-muted rounded-lg mb-4">
+                    <div className="flex items-center gap-3 p-4 bg-muted/30 backdrop-blur-md rounded-lg mb-4 border border-border/50">
                       <Avatar className="h-14 w-14">
                         {userProfile.avatar_url && (
                           <AvatarImage src={userProfile.avatar_url} alt="Profile picture" />
                         )}
-                        <AvatarFallback className="text-base font-semibold">
+                        <AvatarFallback className="text-base font-semibold bg-primary/20 backdrop-blur-md border border-primary/30">
                           {getUserInitials(user.email || '', userProfile.full_name)}
                         </AvatarFallback>
                       </Avatar>
@@ -246,14 +247,14 @@ const Header = () => {
                   
                   <Link 
                     to="/" 
-                    className="text-lg font-medium hover:text-primary transition-colors"
+                    className="text-lg font-medium hover:text-primary transition-all duration-300 px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Home
                   </Link>
                   <Link 
                     to="/interview-experiences" 
-                    className="text-lg font-medium hover:text-primary transition-colors"
+                    className="text-lg font-medium hover:text-primary transition-all duration-300 px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Experiences
@@ -262,36 +263,36 @@ const Header = () => {
                     <>
                       <Link 
                         to="/submit" 
-                        className="text-lg font-medium hover:text-primary transition-colors"
+                        className="text-lg font-medium hover:text-primary transition-all duration-300 px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         Share Experience
                       </Link>
                       <Link 
                         to="/chat" 
-                        className="text-lg font-medium hover:text-primary transition-colors"
+                        className="text-lg font-medium hover:text-primary transition-all duration-300 px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         AI Prep Chat
                       </Link>
                       <Link 
                         to="/resume-ats" 
-                        className="text-lg font-medium hover:text-primary transition-colors"
+                        className="text-lg font-medium hover:text-primary transition-all duration-300 px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         Resume ATS
                       </Link>
                       <Link 
                         to="/conversations" 
-                        className="text-lg font-medium hover:text-primary transition-colors"
+                        className="text-lg font-medium hover:text-primary transition-all duration-300 px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         My Chats
                       </Link>
-                      <div className="border-t pt-4 space-y-4">
+                      <div className="border-t border-border/50 pt-4 space-y-4">
                         <Link 
                           to="/profile" 
-                          className="flex items-center text-lg font-medium hover:text-primary transition-colors"
+                          className="flex items-center text-lg font-medium hover:text-primary transition-all duration-300 px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           <User className="mr-3 h-5 w-5" />
@@ -299,7 +300,7 @@ const Header = () => {
                         </Link>
                         <Link 
                           to="/profile?tab=experiences" 
-                          className="flex items-center text-lg font-medium hover:text-primary transition-colors"
+                          className="flex items-center text-lg font-medium hover:text-primary transition-all duration-300 px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           <Edit className="mr-3 h-5 w-5" />
@@ -310,7 +311,7 @@ const Header = () => {
                             window.location.href = 'mailto:baleraahul@gmail.com?subject=Query from Interview Experience App';
                             setMobileMenuOpen(false);
                           }}
-                          className="flex items-center text-lg font-medium hover:text-primary transition-colors w-full text-left"
+                          className="flex items-center text-lg font-medium hover:text-primary transition-all duration-300 w-full text-left px-3 py-2 rounded-md hover:bg-primary/10 backdrop-blur-sm"
                         >
                           <Mail className="mr-3 h-5 w-5" />
                           Contact Us
@@ -320,7 +321,7 @@ const Header = () => {
                             handleSignOut();
                             setMobileMenuOpen(false);
                           }}
-                          className="flex items-center text-lg font-medium hover:text-primary transition-colors w-full text-left"
+                          className="flex items-center text-lg font-medium hover:text-primary transition-all duration-300 w-full text-left px-3 py-2 rounded-md hover:bg-destructive/10 backdrop-blur-sm"
                         >
                           <LogOut className="mr-3 h-5 w-5" />
                           Sign out
@@ -329,7 +330,7 @@ const Header = () => {
                     </>
                   )}
                   {!user && (
-                    <div className="border-t pt-4 space-y-3">
+                    <div className="border-t border-border/50 pt-4 space-y-3">
                       <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
                         <Button variant="ghost" className="w-full justify-start text-lg">
                           Login
@@ -342,7 +343,7 @@ const Header = () => {
                       </Link>
                     </div>
                   )}
-                  <div className="border-t pt-4 flex justify-center space-x-4">
+                  <div className="border-t border-border/50 pt-4 flex justify-center space-x-4">
                     <TourButton />
                     <ThemeToggle />
                     <ChatNotifications />
