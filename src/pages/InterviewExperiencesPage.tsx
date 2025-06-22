@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
@@ -57,7 +56,7 @@ const InterviewExperiencesPage = () => {
   const [experiences, setExperiences] = useState<InterviewPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCompany, set Kev filterCompany] = useState("all");
+  const [filterCompany, setFilterCompany] = useState("all");
   const [filterType, setFilterType] = useState("all");
   const [filterLevel, setFilterLevel] = useState("all");
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
