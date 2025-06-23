@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Home, Users, MessageSquare, Star, Database, Code, Shield, Zap, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -543,7 +542,7 @@ const DocumentationPage = () => {
                     key={index}
                     onClick={() => goToSlide(index)}
                     className={`w-3 h-3 rounded-full transition-all ${
-                      index === currentSl ide
+                      index === currentSlide
                         ? 'bg-primary'
                         : 'bg-muted hover:bg-muted-foreground/50'
                     }`}
