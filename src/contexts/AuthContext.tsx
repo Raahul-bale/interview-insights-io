@@ -50,10 +50,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               description: "Welcome to Interview Insights! Your account is now active.",
             });
             
-            // Redirect to home page and clear URL parameters
+            // Redirect to auth page (login) and clear URL parameters
             setTimeout(() => {
-              window.history.replaceState({}, document.title, '/');
+              window.history.replaceState({}, document.title, '/auth');
+              window.location.href = '/auth';
             }, 1000);
+          }
+        }
+
+        // Handle token expired or invalid
+        if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_OUT') {
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.has('error')) {
+            const error = urlParams.get('error');
+            const errorDescription = urlParams.get('error_description');
+            
+            if (error === 'access_denied' || errorDescription?.includes('expired')) {
+              toast({
+                title: "Verification Link Expired",
+                description: "The verification link has expired. Please request a new one.",
+                variant: "destructive",
+              });
+              
+              // Redirect to auth page
+              setTimeout(() => {
+                window.history.replaceState({}, document.title, '/auth');
+                window.location.href = '/auth';
+              }, 2000);
+            }
           }
         }
       }
@@ -71,7 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `${window.location.origin}/auth`;
       
       const { error } = await supabase.auth.signUp({
         email,
