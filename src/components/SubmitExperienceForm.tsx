@@ -19,6 +19,7 @@ const SubmitExperienceForm = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [existingLinkedInUrl, setExistingLinkedInUrl] = useState<string>('');
+  const [isAnonymous, setIsAnonymous] = useState(false);
 
   const {
     register,
@@ -34,6 +35,7 @@ const SubmitExperienceForm = () => {
       role: '',
       date: '',
       linkedinUrl: '',
+      isAnonymous: false,
       rounds: [
         {
           type: '',
@@ -88,8 +90,8 @@ const SubmitExperienceForm = () => {
     setIsSubmitting(true);
     
     try {
-      // First, update the user's LinkedIn profile if it's different
-      if (data.linkedinUrl !== existingLinkedInUrl) {
+      // First, update the user's LinkedIn profile if it's different and not anonymous
+      if (!isAnonymous && data.linkedinUrl !== existingLinkedInUrl) {
         const { error: profileError } = await supabase
           .from('profiles')
           .upsert({
@@ -116,23 +118,27 @@ const SubmitExperienceForm = () => {
         `${round.type} ${round.questions.join(' ')} ${round.experience} ${round.answers?.join(' ') || ''}`
       ).join(' ')}`;
 
+      // Determine display name based on anonymity
+      const displayName = isAnonymous ? 'Anonymous User' : (user.user_metadata?.full_name || user.email?.split('@')[0] || 'Anonymous');
+
       const { error } = await supabase
         .from('interview_posts')
         .insert({
           company: data.company,
           role: data.role,
-          user_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Anonymous',
-          user_id: user.id,
+          user_name: displayName,
+          user_id: user.id, // Always store the real user ID for backend functionality
           date: data.date,
           rounds: cleanedRounds,
           full_text: fullText,
+          is_anonymous: isAnonymous, // New field to track anonymity
         });
 
       if (error) throw error;
 
       toast({
         title: "Success!",
-        description: "Your interview experience has been submitted successfully.",
+        description: `Your interview experience has been submitted ${isAnonymous ? 'anonymously' : ''} successfully.`,
       });
 
       navigate('/');
@@ -159,7 +165,12 @@ const SubmitExperienceForm = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <BasicInfoFields register={register} errors={errors} />
+            <BasicInfoFields 
+              register={register} 
+              errors={errors} 
+              isAnonymous={isAnonymous}
+              onAnonymousChange={setIsAnonymous}
+            />
 
             {/* Interview Rounds */}
             <div className="space-y-4">
@@ -204,7 +215,7 @@ const SubmitExperienceForm = () => {
               className="w-full mobile-touch-target h-12 text-base"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Experience'}
+              {isSubmitting ? 'Submitting...' : `Submit Experience${isAnonymous ? ' Anonymously' : ''}`}
             </Button>
           </form>
         </CardContent>

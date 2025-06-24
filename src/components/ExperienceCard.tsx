@@ -1,8 +1,9 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Star, ThumbsUp, Edit, User, Calendar } from "lucide-react";
+import { Star, ThumbsUp, Edit, User, Calendar, UserX } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
@@ -26,6 +27,7 @@ interface ExperienceCardProps {
   averageRating?: number;
   ratingCount?: number;
   upvoteCount?: number;
+  isAnonymous?: boolean;
 }
 
 const ExperienceCard = ({ 
@@ -39,11 +41,12 @@ const ExperienceCard = ({
   outcome,
   averageRating = 0,
   ratingCount = 0,
-  upvoteCount = 0
+  upvoteCount = 0,
+  isAnonymous = false
 }: ExperienceCardProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { profile } = useProfile(userId);
+  const { profile } = useProfile(userId && !isAnonymous ? userId : null);
   const canEdit = user && userId && user.id === userId;
   
   const handleCardClick = (e: React.MouseEvent) => {
@@ -55,6 +58,11 @@ const ExperienceCard = ({
       navigate(`/experience/${id}`);
     }
   };
+
+  // Display name and avatar logic for anonymous posts
+  const displayName = isAnonymous ? 'Anonymous User' : (profile?.full_name || name);
+  const showProfile = !isAnonymous && profile;
+  const showFollowButton = !isAnonymous && userId;
 
   return (
     <Card 
@@ -71,17 +79,30 @@ const ExperienceCard = ({
             
             <div className="flex items-center gap-3 mb-4">
               <Avatar className="h-10 w-10 ring-2 ring-primary/10">
-                <AvatarImage src={profile?.avatar_url || undefined} alt={name} />
-                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground font-medium">
-                  <User className="h-5 w-5" />
-                </AvatarFallback>
+                {isAnonymous ? (
+                  <AvatarFallback className="bg-gradient-to-br from-gray-400 to-gray-600 text-white font-medium">
+                    <UserX className="h-5 w-5" />
+                  </AvatarFallback>
+                ) : (
+                  <>
+                    <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground font-medium">
+                      <User className="h-5 w-5" />
+                    </AvatarFallback>
+                  </>
+                )}
               </Avatar>
               
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-foreground">
-                      {profile?.full_name || name}
+                    <p className="font-medium text-foreground flex items-center gap-2">
+                      {displayName}
+                      {isAnonymous && (
+                        <Badge variant="secondary" className="text-xs">
+                          Anonymous
+                        </Badge>
+                      )}
                     </p>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
@@ -95,7 +116,7 @@ const ExperienceCard = ({
                     </div>
                   </div>
                   
-                  {userId && (
+                  {showFollowButton && (
                     <FollowButton 
                       targetUserId={userId} 
                       size="sm" 
@@ -106,7 +127,7 @@ const ExperienceCard = ({
                   )}
                 </div>
                 
-                {profile?.bio && (
+                {showProfile?.bio && (
                   <p className="text-xs text-muted-foreground mt-1 truncate max-w-[300px]">
                     {profile.bio}
                   </p>
