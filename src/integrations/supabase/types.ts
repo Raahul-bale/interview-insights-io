@@ -344,6 +344,7 @@ export type Database = {
           embedding: string | null
           full_text: string
           id: string
+          is_anonymous: boolean
           rating_count: number | null
           role: string
           rounds: Json
@@ -360,6 +361,7 @@ export type Database = {
           embedding?: string | null
           full_text: string
           id?: string
+          is_anonymous?: boolean
           rating_count?: number | null
           role: string
           rounds?: Json
@@ -376,6 +378,7 @@ export type Database = {
           embedding?: string | null
           full_text?: string
           id?: string
+          is_anonymous?: boolean
           rating_count?: number | null
           role?: string
           rounds?: Json

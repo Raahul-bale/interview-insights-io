@@ -52,7 +52,7 @@ const BasicInfoFields = ({ register, errors, isAnonymous, onAnonymousChange }: B
             className={errors.date ? 'border-destructive' : ''}
           />
           {errors.date && (
-            <p className="text-sm text-descriptive mt-1">{errors.date.message}</p>
+            <p className="text-sm text-destructive mt-1">{errors.date.message}</p>
           )}
         </div>
 
