@@ -30,74 +30,82 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+      } catch (error) {
+        console.error('Session error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getInitialSession();
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Handle email verification success
+        // Handle email confirmation success
         if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at) {
-          // Check if this is from email verification (has token in URL)
+          // Check if this is from email verification
           const urlParams = new URLSearchParams(window.location.search);
-          const isFromEmailVerification = urlParams.has('token_hash') || urlParams.has('type');
+          const hasToken = urlParams.has('token_hash') || urlParams.has('access_token');
           
-          if (isFromEmailVerification) {
+          if (hasToken) {
             toast({
               title: "Email Verified Successfully!",
               description: "Welcome to Interview Insights! Your account is now active.",
             });
             
-            // Redirect to auth page (login) and clear URL parameters
-            setTimeout(() => {
-              window.history.replaceState({}, document.title, '/auth');
-              window.location.href = '/auth';
-            }, 1000);
+            // Clean up URL parameters after successful verification
+            window.history.replaceState({}, document.title, window.location.pathname);
           }
         }
 
-        // Handle token expired or invalid
-        if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_OUT') {
+        // Handle email confirmation errors
+        if (event === 'TOKEN_REFRESHED') {
           const urlParams = new URLSearchParams(window.location.search);
-          if (urlParams.has('error')) {
-            const error = urlParams.get('error');
-            const errorDescription = urlParams.get('error_description');
+          const error = urlParams.get('error');
+          const errorDescription = urlParams.get('error_description');
+          
+          if (error) {
+            console.error('Auth error:', error, errorDescription);
+            toast({
+              title: "Authentication Error",
+              description: errorDescription || "There was an issue with authentication. Please try again.",
+              variant: "destructive",
+            });
             
-            if (error === 'access_denied' || errorDescription?.includes('expired')) {
-              toast({
-                title: "Verification Link Expired",
-                description: "The verification link has expired. Please request a new one.",
-                variant: "destructive",
-              });
-              
-              // Redirect to auth page
-              setTimeout(() => {
-                window.history.replaceState({}, document.title, '/auth');
-                window.location.href = '/auth';
-              }, 2000);
-            }
+            // Clean up URL parameters
+            window.history.replaceState({}, document.title, '/auth');
           }
         }
       }
     );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
 
     return () => subscription.unsubscribe();
   }, [toast]);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
+      setLoading(true);
+      
+      // Use the current domain for redirect URL
       const redirectUrl = `${window.location.origin}/auth`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -108,30 +116,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
       
-      return { error };
+      if (error) {
+        console.error('Signup error:', error);
+        return { error };
+      }
+
+      if (data.user && !data.user.email_confirmed_at) {
+        toast({
+          title: "Check your email!",
+          description: "We've sent you a confirmation link. Please check your email and click the link to verify your account.",
+        });
+      }
+      
+      return { error: null };
     } catch (error) {
+      console.error('Signup exception:', error);
       return { error };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      setLoading(true);
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
+      if (error) {
+        console.error('Signin error:', error);
+      }
+      
       return { error };
     } catch (error) {
+      console.error('Signin exception:', error);
       return { error };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
+      if (!error) {
+        setUser(null);
+        setSession(null);
+      }
       return { error };
     } catch (error) {
+      console.error('Signout exception:', error);
       return { error };
     }
   };
