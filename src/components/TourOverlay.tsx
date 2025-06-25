@@ -52,7 +52,7 @@ const TourOverlay = () => {
           borderRadius: window.innerWidth < 768 ? '8px' : '12px',
           boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 0 9999px rgba(0, 0, 0, 0.4)',
           pointerEvents: 'none',
-          zIndex: 9998,
+          zIndex: 99998,
           transition: 'all 0.3s ease'
         });
 
@@ -106,7 +106,7 @@ const TourOverlay = () => {
           left,
           width: tooltipWidth,
           maxHeight: tooltipMaxHeight,
-          zIndex: 9999,
+          zIndex: 99999,
           transform: 'scale(1)',
           opacity: 1,
           transition: 'all 0.3s ease',
@@ -140,7 +140,7 @@ const TourOverlay = () => {
       <div style={overlayStyle} />
       
       {/* Tooltip */}
-      <Card style={tooltipStyle} className="shadow-xl border-2 border-primary bg-card/98 backdrop-blur-sm">
+      <Card style={tooltipStyle} className="shadow-2xl border-2 border-primary bg-white dark:bg-slate-900 backdrop-blur-sm">
         <CardHeader className={isMobile ? "pb-2 px-4 pt-4" : "pb-3"}>
           <div className="flex items-center justify-between">
             <CardTitle className={isMobile ? "text-base font-semibold" : "text-lg font-semibold"}>
