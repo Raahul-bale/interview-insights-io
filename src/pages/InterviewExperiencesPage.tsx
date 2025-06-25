@@ -75,15 +75,6 @@ const InterviewExperiencesPage = () => {
         query = query.eq('company', filterCompany);
       }
 
-      // Remove filters that don't exist on interview_posts table
-      // if (filterType && filterType !== "all") {
-      //   query = query.eq('interview_type', filterType);
-      // }
-
-      // if (filterLevel && filterLevel !== "all") {
-      //   query = query.eq('experience_level', filterLevel);
-      // }
-
       const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -113,8 +104,8 @@ const InterviewExperiencesPage = () => {
     });
   };
 
-  // Get unique companies for filter
-  const companies = [...new Set(experiences.map(exp => exp.company))].sort();
+  // Get unique companies for filter - ensure we have all companies
+  const companies = [...new Set(experiences.map(exp => exp.company))].filter(Boolean).sort();
 
   const interviewTypes = ['coding', 'behavioral', 'system design', 'technical', 'phone screening', 'onsite'];
   const experienceLevels = ['entry', 'mid', 'senior', 'lead', 'principal'];
@@ -161,25 +152,27 @@ const InterviewExperiencesPage = () => {
             
             <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               <Select value={filterCompany} onValueChange={setFilterCompany}>
-                <SelectTrigger className="h-12 md:h-14 mobile-touch-target">
-                  <SelectValue placeholder="Company" />
+                <SelectTrigger className="h-12 md:h-14 mobile-touch-target bg-background/80 backdrop-blur-sm">
+                  <SelectValue placeholder="All Companies" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Companies</SelectItem>
+                <SelectContent className="bg-background/95 backdrop-blur-md border border-border/50 shadow-lg">
+                  <SelectItem value="all" className="hover:bg-accent/50">All Companies</SelectItem>
                   {companies.map(company => (
-                    <SelectItem key={company} value={company}>{company}</SelectItem>
+                    <SelectItem key={company} value={company} className="hover:bg-accent/50">
+                      {company}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
               <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="h-12 md:h-14 mobile-touch-target">
-                  <SelectValue placeholder="Type" />
+                <SelectTrigger className="h-12 md:h-14 mobile-touch-target bg-background/80 backdrop-blur-sm">
+                  <SelectValue placeholder="All Types" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
+                <SelectContent className="bg-background/95 backdrop-blur-md border border-border/50 shadow-lg">
+                  <SelectItem value="all" className="hover:bg-accent/50">All Types</SelectItem>
                   {interviewTypes.map(type => (
-                    <SelectItem key={type} value={type}>
+                    <SelectItem key={type} value={type} className="hover:bg-accent/50">
                       {type.charAt(0).toUpperCase() + type.slice(1)}
                     </SelectItem>
                   ))}
@@ -187,13 +180,13 @@ const InterviewExperiencesPage = () => {
               </Select>
 
               <Select value={filterLevel} onValueChange={setFilterLevel}>
-                <SelectTrigger className="h-12 md:h-14 mobile-touch-target">
-                  <SelectValue placeholder="Level" />
+                <SelectTrigger className="h-12 md:h-14 mobile-touch-target bg-background/80 backdrop-blur-sm">
+                  <SelectValue placeholder="All Levels" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Levels</SelectItem>
+                <SelectContent className="bg-background/95 backdrop-blur-md border border-border/50 shadow-lg">
+                  <SelectItem value="all" className="hover:bg-accent/50">All Levels</SelectItem>
                   {experienceLevels.map(level => (
-                    <SelectItem key={level} value={level}>
+                    <SelectItem key={level} value={level} className="hover:bg-accent/50">
                       {level.charAt(0).toUpperCase() + level.slice(1)}
                     </SelectItem>
                   ))}

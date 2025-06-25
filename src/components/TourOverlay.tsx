@@ -41,91 +41,110 @@ const TourOverlay = () => {
         
         // Calculate overlay styles - mobile responsive
         const rect = element.getBoundingClientRect();
-        const padding = window.innerWidth < 768 ? 4 : 8;
+        const padding = window.innerWidth < 768 ? 6 : 10;
         
         setOverlayStyle({
           position: 'fixed',
-          top: rect.top - padding,
-          left: rect.left - padding,
-          width: rect.width + (padding * 2),
+          top: Math.max(0, rect.top - padding),
+          left: Math.max(0, rect.left - padding),
+          width: Math.min(window.innerWidth - (rect.left - padding), rect.width + (padding * 2)),
           height: rect.height + (padding * 2),
-          borderRadius: window.innerWidth < 768 ? '8px' : '12px',
-          boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 0 9999px rgba(0, 0, 0, 0.4)',
+          borderRadius: window.innerWidth < 768 ? '12px' : '16px',
+          boxShadow: '0 0 0 6px rgba(59, 130, 246, 0.6), 0 0 0 9999px rgba(0, 0, 0, 0.5)',
           pointerEvents: 'none',
-          zIndex: 99998,
-          transition: 'all 0.3s ease'
+          zIndex: 99997,
+          transition: 'all 0.3s ease-in-out',
+          border: '2px solid rgba(59, 130, 246, 0.8)'
         });
 
-        // Calculate tooltip position - mobile responsive
+        // Calculate tooltip position - improved mobile responsive
         const isMobile = window.innerWidth < 768;
-        const tooltipWidth = isMobile ? window.innerWidth - 32 : 320;
-        const tooltipMaxHeight = isMobile ? 'auto' : '220px';
+        const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+        
+        let tooltipWidth = isMobile ? Math.min(window.innerWidth - 24, 340) : 380;
+        if (isTablet) tooltipWidth = 350;
+        
         const placement = isMobile ? 'bottom' : (currentStepData.placement || 'right');
-        const margin = isMobile ? 8 : 16;
+        const margin = isMobile ? 12 : 20;
         
         let top, left;
         
         if (isMobile) {
-          // On mobile, always place tooltip at bottom with full width
-          top = Math.min(rect.bottom + margin, window.innerHeight - 300);
-          left = 16;
+          // Mobile: place tooltip below target with safe margins
+          top = Math.min(
+            rect.bottom + margin, 
+            window.innerHeight - 320
+          );
+          left = (window.innerWidth - tooltipWidth) / 2;
+          
+          // Ensure tooltip doesn't go off screen
+          if (top < rect.bottom + 8) {
+            top = rect.top - 280;
+          }
         } else {
-          // Desktop positioning logic
+          // Desktop positioning logic with better bounds checking
           switch (placement) {
             case 'top':
-              top = rect.top - 180 - margin;
-              left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+              top = Math.max(20, rect.top - 200 - margin);
+              left = Math.max(10, Math.min(
+                rect.left + (rect.width / 2) - (tooltipWidth / 2),
+                window.innerWidth - tooltipWidth - 10
+              ));
               break;
             case 'bottom':
-              top = rect.bottom + margin;
-              left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+              top = Math.min(rect.bottom + margin, window.innerHeight - 220);
+              left = Math.max(10, Math.min(
+                rect.left + (rect.width / 2) - (tooltipWidth / 2),
+                window.innerWidth - tooltipWidth - 10
+              ));
               break;
             case 'left':
-              top = rect.top + (rect.height / 2) - 90;
-              left = rect.left - tooltipWidth - margin;
+              top = Math.max(20, Math.min(
+                rect.top + (rect.height / 2) - 100,
+                window.innerHeight - 220
+              ));
+              left = Math.max(10, rect.left - tooltipWidth - margin);
               break;
             case 'right':
-              top = rect.top + (rect.height / 2) - 90;
-              left = rect.right + margin;
-              break;
             default:
-              top = rect.top + (rect.height / 2) - 90;
-              left = rect.right + margin;
+              top = Math.max(20, Math.min(
+                rect.top + (rect.height / 2) - 100,
+                window.innerHeight - 220
+              ));
+              left = Math.min(rect.right + margin, window.innerWidth - tooltipWidth - 10);
+              break;
           }
-
-          // Ensure tooltip stays within viewport on desktop
-          if (left < 10) left = 10;
-          if (left + tooltipWidth > window.innerWidth - 10) left = window.innerWidth - tooltipWidth - 10;
-          if (top < 10) top = 10;
-          if (top + 180 > window.innerHeight - 10) top = window.innerHeight - 180 - 10;
         }
 
         setTooltipStyle({
           position: 'fixed',
-          top,
-          left,
+          top: Math.max(10, top),
+          left: Math.max(10, left),
           width: tooltipWidth,
-          maxHeight: tooltipMaxHeight,
-          zIndex: 99999,
+          maxHeight: isMobile ? '280px' : '240px',
+          zIndex: 99998,
           transform: 'scale(1)',
           opacity: 1,
-          transition: 'all 0.3s ease',
-          overflow: isMobile ? 'visible' : 'hidden'
+          transition: 'all 0.3s ease-in-out',
+          overflow: 'visible'
         });
       }
     };
 
     // Small delay to ensure DOM is updated
-    const timer = setTimeout(findTarget, 100);
+    const timer = setTimeout(findTarget, 150);
     
-    // Re-calculate on window resize
-    window.addEventListener('resize', findTarget);
-    window.addEventListener('scroll', findTarget);
+    // Re-calculate on window resize and scroll
+    const handleResize = () => setTimeout(findTarget, 100);
+    const handleScroll = () => setTimeout(findTarget, 50);
+    
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleScroll);
     
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('resize', findTarget);
-      window.removeEventListener('scroll', findTarget);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, [isActive, currentStepData]);
 
@@ -139,31 +158,31 @@ const TourOverlay = () => {
       {/* Highlight overlay */}
       <div style={overlayStyle} />
       
-      {/* Tooltip with white glass effect */}
+      {/* Tooltip with enhanced white glass effect */}
       <Card 
         style={tooltipStyle} 
-        className="shadow-2xl border border-white/20 bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg"
+        className="shadow-2xl border-2 border-white/30 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl"
       >
-        <CardHeader className={isMobile ? "pb-2 px-4 pt-4" : "pb-3"}>
+        <CardHeader className={isMobile ? "pb-2 px-4 pt-4" : "pb-3 px-6 pt-5"}>
           <div className="flex items-center justify-between">
-            <CardTitle className={isMobile ? "text-base font-semibold text-gray-900 dark:text-white" : "text-lg font-semibold text-gray-900 dark:text-white"}>
+            <CardTitle className={`${isMobile ? "text-base" : "text-lg"} font-bold text-gray-900 dark:text-white`}>
               {currentStepData.title}
             </CardTitle>
             <Button
               variant="ghost"
               size="icon"
               onClick={completeTour}
-              className={`${isMobile ? "h-5 w-5" : "h-6 w-6"} hover:bg-gray-100/50 dark:hover:bg-gray-800/50`}
+              className={`${isMobile ? "h-6 w-6" : "h-7 w-7"} hover:bg-gray-100/70 dark:hover:bg-gray-800/70 rounded-full`}
             >
-              <X className={`${isMobile ? "h-3 w-3" : "h-4 w-4"} text-gray-700 dark:text-gray-300`} />
+              <X className={`${isMobile ? "h-3.5 w-3.5" : "h-4 w-4"} text-gray-600 dark:text-gray-400`} />
             </Button>
           </div>
-          <div className={`${isMobile ? "text-xs" : "text-xs"} text-gray-600 dark:text-gray-400`}>
+          <div className={`${isMobile ? "text-xs" : "text-sm"} text-gray-500 dark:text-gray-400 font-medium`}>
             Step {currentStep + 1} of {totalSteps}
           </div>
         </CardHeader>
-        <CardContent className={isMobile ? "space-y-3 px-4 pb-4" : "space-y-4"}>
-          <p className={`${isMobile ? "text-sm leading-relaxed" : "text-sm"} text-gray-800 dark:text-gray-200`}>
+        <CardContent className={isMobile ? "space-y-4 px-4 pb-4" : "space-y-5 px-6 pb-5"}>
+          <p className={`${isMobile ? "text-sm leading-relaxed" : "text-base leading-relaxed"} text-gray-700 dark:text-gray-200`}>
             {currentStepData.content}
           </p>
           
@@ -172,11 +191,11 @@ const TourOverlay = () => {
               {currentStepData.showPrev && currentStep > 0 && (
                 <Button
                   variant="outline"
-                  size={isMobile ? "sm" : "sm"}
+                  size={isMobile ? "sm" : "default"}
                   onClick={prevStep}
-                  className={`${isMobile ? "h-8 text-xs" : "h-8"} bg-white/50 border-gray-300/50 hover:bg-white/70 dark:bg-gray-800/50 dark:border-gray-600/50 dark:hover:bg-gray-700/70`}
+                  className={`${isMobile ? "h-9 text-xs px-3" : "h-10 px-4"} bg-white/70 border-gray-300/60 hover:bg-white/90 dark:bg-gray-800/70 dark:border-gray-600/60 dark:hover:bg-gray-700/90 backdrop-blur-sm`}
                 >
-                  <ChevronLeft className="h-3 w-3 mr-1" />
+                  <ChevronLeft className="h-4 w-4 mr-1" />
                   {isMobile ? "Prev" : "Previous"}
                 </Button>
               )}
@@ -186,23 +205,23 @@ const TourOverlay = () => {
               {currentStepData.showSkip && (
                 <Button
                   variant="ghost"
-                  size={isMobile ? "sm" : "sm"}
+                  size={isMobile ? "sm" : "default"}
                   onClick={skipTour}
-                  className={`${isMobile ? "h-8 text-xs" : "h-8"} text-gray-600 dark:text-gray-400 hover:bg-gray-100/50 dark:hover:bg-gray-800/50`}
+                  className={`${isMobile ? "h-9 text-xs px-3" : "h-10 px-4"} text-gray-500 dark:text-gray-400 hover:bg-gray-100/60 dark:hover:bg-gray-800/60`}
                 >
-                  <SkipForward className="h-3 w-3 mr-1" />
+                  <SkipForward className="h-4 w-4 mr-1" />
                   Skip
                 </Button>
               )}
               {currentStepData.showNext && (
                 <Button
-                  size={isMobile ? "sm" : "sm"}
+                  size={isMobile ? "sm" : "default"}
                   onClick={nextStep}
-                  className={`${isMobile ? "h-8 text-xs" : "h-8"} bg-primary/90 hover:bg-primary text-white`}
+                  className={`${isMobile ? "h-9 text-xs px-4" : "h-10 px-5"} bg-primary/95 hover:bg-primary text-white font-medium shadow-lg`}
                 >
                   {currentStep === totalSteps - 1 ? 'Finish' : 'Next'}
                   {currentStep !== totalSteps - 1 && (
-                    <ChevronRight className="h-3 w-3 ml-1" />
+                    <ChevronRight className="h-4 w-4 ml-1" />
                   )}
                 </Button>
               )}
@@ -210,16 +229,16 @@ const TourOverlay = () => {
           </div>
           
           {/* Progress dots */}
-          <div className="flex justify-center gap-1 pt-1">
+          <div className="flex justify-center gap-2 pt-2">
             {Array.from({ length: totalSteps }).map((_, index) => (
               <div
                 key={index}
-                className={`${isMobile ? 'w-1.5 h-1.5' : 'w-2 h-2'} rounded-full transition-colors ${
+                className={`${isMobile ? 'w-2 h-2' : 'w-2.5 h-2.5'} rounded-full transition-all duration-300 ${
                   index === currentStep 
-                    ? 'bg-primary' 
+                    ? 'bg-primary shadow-sm' 
                     : index < currentStep 
-                      ? 'bg-primary/50' 
-                      : 'bg-gray-300 dark:bg-gray-600'
+                      ? 'bg-primary/60' 
+                      : 'bg-gray-300/60 dark:bg-gray-600/60'
                 }`}
               />
             ))}
