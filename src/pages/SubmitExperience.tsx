@@ -53,15 +53,19 @@ const SubmitExperience = () => {
 
       setIsLoading(true);
       try {
-        // Load user profile to auto-populate name
+        // Load user profile to auto-populate name and LinkedIn URL
         const { data: profile } = await supabase
           .from('profiles')
-          .select('full_name')
+          .select('full_name, linkedin_url')
           .eq('user_id', user.id)
           .single();
 
         if (profile?.full_name) {
-          setFormData(prev => ({ ...prev, name: profile.full_name }));
+          setFormData(prev => ({ 
+            ...prev, 
+            name: profile.full_name,
+            linkedinUrl: profile.linkedin_url || ""
+          }));
         }
 
         // If editing, load experience data
@@ -90,7 +94,7 @@ const SubmitExperience = () => {
               role: experience.role,
               date: experience.date,
               outcome: "",
-              linkedinUrl: experience.linkedin_url || ""
+              linkedinUrl: profile?.linkedin_url || ""
             });
 
             // Transform database rounds format to component format
@@ -462,7 +466,7 @@ const SubmitExperience = () => {
                   <Checkbox
                     id="anonymous"
                     checked={isAnonymous}
-                    onCheckedChange={setIsAnonymous}
+                    onCheckedChange={(checked) => setIsAnonymous(checked === true)}
                   />
                   <Label 
                     htmlFor="anonymous" 
