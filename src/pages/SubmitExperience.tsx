@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +31,7 @@ const SubmitExperience = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const isEditing = Boolean(experienceId);
   
   const [formData, setFormData] = useState({
@@ -37,14 +39,14 @@ const SubmitExperience = () => {
     company: "",
     role: "",
     date: "",
-    outcome: ""
+    outcome: "",
+    linkedinUrl: ""
   });
   
   const [rounds, setRounds] = useState<Round[]>([
     { type: "", questions: "", answers: "", experience: "", difficulty: "" }
   ]);
 
-  // Load user profile and experience data if editing
   useEffect(() => {
     const loadData = async () => {
       if (!user) return;
@@ -87,7 +89,8 @@ const SubmitExperience = () => {
               company: experience.company,
               role: experience.role,
               date: experience.date,
-              outcome: ""
+              outcome: "",
+              linkedinUrl: experience.linkedin_url || ""
             });
 
             // Transform database rounds format to component format
@@ -96,11 +99,12 @@ const SubmitExperience = () => {
               type: round.type,
               questions: Array.isArray(round.questions) ? round.questions.join('\n') : round.questions,
               answers: Array.isArray(round.answers) ? round.answers.join('\n') : round.answers,
-              experience: "", // This field wasn't stored separately before
+              experience: round.experience || "", // This field wasn't stored separately before
               difficulty: round.difficulty || 'medium'
             }));
 
             setRounds(transformedRounds);
+            setIsAnonymous(experience.is_anonymous || false);
           }
         }
       } catch (error) {
@@ -192,8 +196,11 @@ const SubmitExperience = () => {
     setIsSubmitting(true);
 
     try {
+      // Determine display name based on anonymity
+      const displayName = isAnonymous ? 'Anonymous User' : formData.name;
+      
       // Create full text for search/embedding
-      const fullText = `${formData.company} ${formData.role} interview experience by ${formData.name}. ${validRounds.map(r => `${r.type} round: Questions: ${r.questions} Answers: ${r.answers} Experience: ${r.experience}`).join(' ')}`;
+      const fullText = `${formData.company} ${formData.role} interview experience by ${displayName}. ${validRounds.map(r => `${r.type} round: Questions: ${r.questions} Answers: ${r.answers} Experience: ${r.experience}`).join(' ')}`;
       
       // Prepare rounds data - use only valid rounds
       const roundsData = validRounds.map(r => ({
@@ -208,12 +215,13 @@ const SubmitExperience = () => {
         const { error } = await supabase
           .from('interview_posts')
           .update({
-            user_name: formData.name,
+            user_name: displayName,
             company: formData.company,
             role: formData.role,
             date: formData.date || new Date().toISOString().split('T')[0],
             rounds: roundsData,
-            full_text: fullText
+            full_text: fullText,
+            is_anonymous: isAnonymous
           })
           .eq('id', experienceId)
           .eq('user_id', user.id);
@@ -222,37 +230,54 @@ const SubmitExperience = () => {
 
         toast({
           title: "Experience Updated!",
-          description: "Your interview experience has been updated successfully.",
+          description: `Your interview experience has been updated successfully ${isAnonymous ? 'as anonymous' : ''}.`,
         });
 
         navigate('/');
       } else {
+        // Update LinkedIn profile if not anonymous and different
+        if (!isAnonymous && formData.linkedinUrl) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              user_id: user.id,
+              linkedin_url: formData.linkedinUrl,
+              updated_at: new Date().toISOString()
+            });
+
+          if (profileError) {
+            console.error('Error updating LinkedIn profile:', profileError);
+          }
+        }
+
         // Create new experience
         const { error } = await supabase
           .from('interview_posts')
           .insert({
             user_id: user.id,
-            user_name: formData.name,
+            user_name: displayName,
             company: formData.company,
             role: formData.role,
             date: formData.date || new Date().toISOString().split('T')[0],
             rounds: roundsData,
-            full_text: fullText
+            full_text: fullText,
+            is_anonymous: isAnonymous
           });
 
         if (error) throw error;
 
         toast({
           title: "Experience Shared!",
-          description: "Thank you for sharing your interview experience. It will help other students prepare better!",
+          description: `Thank you for sharing your interview experience ${isAnonymous ? 'anonymously' : ''}. It will help other students prepare better!`,
         });
 
         // Show feedback form after successful submission
         setShowFeedbackForm(true);
 
         // Reset form
-        setFormData({ name: "", company: "", role: "", date: "", outcome: "" });
+        setFormData({ name: "", company: "", role: "", date: "", outcome: "", linkedinUrl: "" });
         setRounds([{ type: "", questions: "", answers: "", experience: "", difficulty: "" }]);
+        setIsAnonymous(false);
       }
       
     } catch (error) {
@@ -267,7 +292,6 @@ const SubmitExperience = () => {
     }
   };
 
-  // If showing feedback form, display that instead
   if (showFeedbackForm) {
     return (
       <div className="min-h-screen bg-background">
@@ -360,7 +384,13 @@ const SubmitExperience = () => {
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                       placeholder="Enter your name"
                       required
+                      disabled={isAnonymous}
                     />
+                    {isAnonymous && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Name is disabled for anonymous posts
+                      </p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="company">Company *</Label>
@@ -396,18 +426,53 @@ const SubmitExperience = () => {
                   </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="outcome">Outcome</Label>
-                  <Select value={formData.outcome} onValueChange={(value) => setFormData({...formData, outcome: value})}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select outcome" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="selected">Selected</SelectItem>
-                      <SelectItem value="not-selected">Not Selected</SelectItem>
-                      <SelectItem value="waiting">Waiting for Result</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="outcome">Outcome</Label>
+                    <Select value={formData.outcome} onValueChange={(value) => setFormData({...formData, outcome: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select outcome" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="selected">Selected</SelectItem>
+                        <SelectItem value="not-selected">Not Selected</SelectItem>
+                        <SelectItem value="waiting">Waiting for Result</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="linkedinUrl">LinkedIn Profile (Optional)</Label>
+                    <Input
+                      id="linkedinUrl"
+                      value={formData.linkedinUrl}
+                      onChange={(e) => setFormData({...formData, linkedinUrl: e.target.value})}
+                      placeholder="https://linkedin.com/in/yourprofile"
+                      disabled={isAnonymous}
+                    />
+                    {isAnonymous && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        LinkedIn profile is disabled for anonymous posts
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Anonymous checkbox */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="anonymous"
+                    checked={isAnonymous}
+                    onCheckedChange={setIsAnonymous}
+                  />
+                  <Label 
+                    htmlFor="anonymous" 
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Post anonymously
+                  </Label>
+                  <div className="text-xs text-muted-foreground ml-2">
+                    Your identity will be hidden from other users, but you can still receive ratings and messages
+                  </div>
                 </div>
 
                 {/* Interview Rounds */}
@@ -511,8 +576,13 @@ const SubmitExperience = () => {
                   ))}
                 </div>
 
-                <Button type="submit" className="w-full" size="lg" disabled={isSubmitting || isLoading}>
-                  {isSubmitting ? (isEditing ? "Updating..." : "Sharing...") : (isEditing ? "Update Experience" : "Share Experience")}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  size="lg"
+                  disabled={isSubmitting || isLoading}
+                >
+                  {isSubmitting ? (isEditing ? "Updating..." : "Sharing...") : (isEditing ? "Update Experience" : `Share Experience${isAnonymous ? ' Anonymously' : ''}`)}
                 </Button>
               </form>
             </CardContent>

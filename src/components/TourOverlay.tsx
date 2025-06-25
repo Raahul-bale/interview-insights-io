@@ -139,28 +139,31 @@ const TourOverlay = () => {
       {/* Highlight overlay */}
       <div style={overlayStyle} />
       
-      {/* Tooltip */}
-      <Card style={tooltipStyle} className="shadow-2xl border-2 border-primary bg-white dark:bg-slate-900 backdrop-blur-sm">
+      {/* Tooltip with white glass effect */}
+      <Card 
+        style={tooltipStyle} 
+        className="shadow-2xl border border-white/20 bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg"
+      >
         <CardHeader className={isMobile ? "pb-2 px-4 pt-4" : "pb-3"}>
           <div className="flex items-center justify-between">
-            <CardTitle className={isMobile ? "text-base font-semibold" : "text-lg font-semibold"}>
+            <CardTitle className={isMobile ? "text-base font-semibold text-gray-900 dark:text-white" : "text-lg font-semibold text-gray-900 dark:text-white"}>
               {currentStepData.title}
             </CardTitle>
             <Button
               variant="ghost"
               size="icon"
               onClick={completeTour}
-              className={isMobile ? "h-5 w-5" : "h-6 w-6"}
+              className={`${isMobile ? "h-5 w-5" : "h-6 w-6"} hover:bg-gray-100/50 dark:hover:bg-gray-800/50`}
             >
-              <X className={isMobile ? "h-3 w-3" : "h-4 w-4"} />
+              <X className={`${isMobile ? "h-3 w-3" : "h-4 w-4"} text-gray-700 dark:text-gray-300`} />
             </Button>
           </div>
-          <div className={isMobile ? "text-xs text-muted-foreground" : "text-xs text-muted-foreground"}>
+          <div className={`${isMobile ? "text-xs" : "text-xs"} text-gray-600 dark:text-gray-400`}>
             Step {currentStep + 1} of {totalSteps}
           </div>
         </CardHeader>
         <CardContent className={isMobile ? "space-y-3 px-4 pb-4" : "space-y-4"}>
-          <p className={isMobile ? "text-sm text-foreground leading-relaxed" : "text-sm text-foreground"}>
+          <p className={`${isMobile ? "text-sm leading-relaxed" : "text-sm"} text-gray-800 dark:text-gray-200`}>
             {currentStepData.content}
           </p>
           
@@ -171,7 +174,7 @@ const TourOverlay = () => {
                   variant="outline"
                   size={isMobile ? "sm" : "sm"}
                   onClick={prevStep}
-                  className={isMobile ? "h-8 text-xs" : "h-8"}
+                  className={`${isMobile ? "h-8 text-xs" : "h-8"} bg-white/50 border-gray-300/50 hover:bg-white/70 dark:bg-gray-800/50 dark:border-gray-600/50 dark:hover:bg-gray-700/70`}
                 >
                   <ChevronLeft className="h-3 w-3 mr-1" />
                   {isMobile ? "Prev" : "Previous"}
@@ -185,7 +188,7 @@ const TourOverlay = () => {
                   variant="ghost"
                   size={isMobile ? "sm" : "sm"}
                   onClick={skipTour}
-                  className={isMobile ? "h-8 text-xs text-muted-foreground" : "h-8 text-muted-foreground"}
+                  className={`${isMobile ? "h-8 text-xs" : "h-8"} text-gray-600 dark:text-gray-400 hover:bg-gray-100/50 dark:hover:bg-gray-800/50`}
                 >
                   <SkipForward className="h-3 w-3 mr-1" />
                   Skip
@@ -195,7 +198,7 @@ const TourOverlay = () => {
                 <Button
                   size={isMobile ? "sm" : "sm"}
                   onClick={nextStep}
-                  className={isMobile ? "h-8 text-xs" : "h-8"}
+                  className={`${isMobile ? "h-8 text-xs" : "h-8"} bg-primary/90 hover:bg-primary text-white`}
                 >
                   {currentStep === totalSteps - 1 ? 'Finish' : 'Next'}
                   {currentStep !== totalSteps - 1 && (
@@ -216,7 +219,7 @@ const TourOverlay = () => {
                     ? 'bg-primary' 
                     : index < currentStep 
                       ? 'bg-primary/50' 
-                      : 'bg-muted'
+                      : 'bg-gray-300 dark:bg-gray-600'
                 }`}
               />
             ))}
