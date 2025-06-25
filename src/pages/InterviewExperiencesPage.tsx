@@ -54,6 +54,7 @@ const InterviewExperiencesPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [experiences, setExperiences] = useState<InterviewPost[]>([]);
+  const [allCompanies, setAllCompanies] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCompany, setFilterCompany] = useState("all");
@@ -91,6 +92,28 @@ const InterviewExperiencesPage = () => {
     }
   };
 
+  const fetchAllCompanies = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('interview_posts')
+        .select('company')
+        .not('company', 'is', null)
+        .order('company');
+
+      if (error) throw error;
+      
+      const uniqueCompanies = [...new Set(data?.map(item => item.company) || [])].filter(Boolean).sort();
+      console.log('Fetched companies:', uniqueCompanies);
+      setAllCompanies(uniqueCompanies);
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllCompanies();
+  }, []);
+
   useEffect(() => {
     fetchExperiences();
   }, [searchTerm, filterCompany, filterType, filterLevel]);
@@ -98,14 +121,12 @@ const InterviewExperiencesPage = () => {
   const handleExperienceSubmitted = () => {
     setIsSubmitDialogOpen(false);
     fetchExperiences();
+    fetchAllCompanies(); // Refresh companies list
     toast({
       title: "Success!",
       description: "Your interview experience has been shared.",
     });
   };
-
-  // Get unique companies for filter - ensure we have all companies
-  const companies = [...new Set(experiences.map(exp => exp.company))].filter(Boolean).sort();
 
   const interviewTypes = ['coding', 'behavioral', 'system design', 'technical', 'phone screening', 'onsite'];
   const experienceLevels = ['entry', 'mid', 'senior', 'lead', 'principal'];
@@ -155,9 +176,9 @@ const InterviewExperiencesPage = () => {
                 <SelectTrigger className="h-12 md:h-14 mobile-touch-target bg-background/80 backdrop-blur-sm">
                   <SelectValue placeholder="All Companies" />
                 </SelectTrigger>
-                <SelectContent className="bg-background/95 backdrop-blur-md border border-border/50 shadow-lg">
+                <SelectContent className="bg-background/95 backdrop-blur-md border border-border/50 shadow-lg max-h-[200px] overflow-y-auto z-50">
                   <SelectItem value="all" className="hover:bg-accent/50">All Companies</SelectItem>
-                  {companies.map(company => (
+                  {allCompanies.map(company => (
                     <SelectItem key={company} value={company} className="hover:bg-accent/50">
                       {company}
                     </SelectItem>
@@ -169,7 +190,7 @@ const InterviewExperiencesPage = () => {
                 <SelectTrigger className="h-12 md:h-14 mobile-touch-target bg-background/80 backdrop-blur-sm">
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
-                <SelectContent className="bg-background/95 backdrop-blur-md border border-border/50 shadow-lg">
+                <SelectContent className="bg-background/95 backdrop-blur-md border border-border/50 shadow-lg z-50">
                   <SelectItem value="all" className="hover:bg-accent/50">All Types</SelectItem>
                   {interviewTypes.map(type => (
                     <SelectItem key={type} value={type} className="hover:bg-accent/50">
@@ -183,7 +204,7 @@ const InterviewExperiencesPage = () => {
                 <SelectTrigger className="h-12 md:h-14 mobile-touch-target bg-background/80 backdrop-blur-sm">
                   <SelectValue placeholder="All Levels" />
                 </SelectTrigger>
-                <SelectContent className="bg-background/95 backdrop-blur-md border border-border/50 shadow-lg">
+                <SelectContent className="bg-background/95 backdrop-blur-md border border-border/50 shadow-lg z-50">
                   <SelectItem value="all" className="hover:bg-accent/50">All Levels</SelectItem>
                   {experienceLevels.map(level => (
                     <SelectItem key={level} value={level} className="hover:bg-accent/50">
@@ -232,7 +253,7 @@ const InterviewExperiencesPage = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center">
                   <Building2 className="h-6 w-6 md:h-8 md:w-8 text-primary mb-2 sm:mb-0 sm:mr-3" />
                   <div>
-                    <p className="text-xl md:text-2xl font-bold">{companies.length}</p>
+                    <p className="text-xl md:text-2xl font-bold">{allCompanies.length}</p>
                     <p className="text-xs md:text-sm text-muted-foreground">Companies</p>
                   </div>
                 </div>
